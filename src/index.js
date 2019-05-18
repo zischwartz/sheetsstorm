@@ -56,6 +56,52 @@ function set_cred_params(cred) {
 function has_all_cred(cred) {
   return cred["bucket"] && cred["key_id"] && cred["secret_access_key"];
 }
+
+function setup_s3(cred) {
+  // console.log("get all files", cred);
+  // if (has_all_cred(cred)) {
+  AWS.config.credentials = {
+    accessKeyId: cred.key_id,
+    secretAccessKey: cred.secret_access_key,
+    region: "us-west-2"
+  };
+  let s3 = new AWS.S3({
+    apiVersion: "2006-03-01",
+    params: { Bucket: cred.bucket }
+  });
+  return s3;
+}
+
+async function get_files(s3) {
+  // console.log("try it!!!!");
+  // Prefix
+  // s3.listObjects({ Delimiter: "/" })
+  let res = await s3
+    .listObjects()
+    // .listObjects({ Delimiter: "", Prefix: "" })
+    .promise()
+    .catch(e => console.log("err", e));
+  console.log(res);
+  return res ? res["Contents"] : [];
+  // }
+}
+
+function put_file(s3, Key, Body, Metadata) {
+  let params = {
+    Bucket: "na-data-sheetsstorm",
+    Key,
+    Body,
+    Metadata,
+    ContentType: "application/json"
+  };
+  return s3.putObject(params).promise();
+}
+// s3.getObject({Bucket: srcbucket, Key: srckey}
+
+// s3.listObjects({ Delimiter: "/" }, function(err, data) {
+//   console.log(err, data);
+// });
+
 // http://localhost:1234/?bucket=cow
 //  urlParams = new URLSearchParams(window.location.search).get("bucket")
 
@@ -64,50 +110,43 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     let cred = get_cred_params();
-    // console.log(cred);
-
-    this.sheetsComplete = this.sheetsComplete.bind(this);
+    this.sheetsInitialLoadComplete = this.sheetsInitialLoadComplete.bind(this);
     this.credSubmit = this.credSubmit.bind(this);
     let show_cred = !has_all_cred(cred);
     this.state = { show_sf_add: false, show_cred, cred };
-
-    // XXX no work
-    // need to make a role
-    // https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/s3-example-photos-view.html
-    if (has_all_cred(cred)) {
-      AWS.config.credentials = {
-        accessKeyId: cred.key_id,
-        secretAccessKey: cred.secret_access_key,
-        region: "us-west-2"
-      };
-      let s3 = new AWS.S3({
-        apiVersion: "2006-03-01",
-        params: { Bucket: cred.bucket }
-      });
-      console.log("try it!!!!");
-      // s3.listObjects({ Delimiter: "/" })
-      s3.listObjects({ Delimiter: "/" })
-        .promise()
-        .then(res => {
-          console.log("response!");
-          console.log(res);
-        })
-        .catch(e => console.log("err", e));
-
-      // s3.listObjects({ Delimiter: "/" }, function(err, data) {
-      //   console.log(err, data);
-      // });
-    }
   }
-  sheetsComplete(sheets_doc) {
-    console.log("sheetsComplete");
-    console.log(sheets_doc);
+  async componentDidMount() {
+    // need to make a role ... maybe
+    // https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/s3-example-photos-view.html
+
+    // check if they have all the creds first, TODO add back
+    this.s3 = setup_s3(this.state.cred);
+    get_files(this.s3).then(file_list => {
+      this.setState({ file_list });
+      console.log(file_list);
+    });
+  }
+  async sheetsInitialLoadComplete(info, sheets_doc) {
+    console.log("sheetsInitialLoadComplete");
+    console.log(info, sheets_doc);
     this.setState({ show_sf_add: false });
+    toaster.notify("Uploading To S3...", { duration: 120 });
+
+    // name, key, path - in info
+    let meta = { name: info.name, from: "abcdef" };
+    let path = `${info.path}.json`;
+    let body = JSON.stringify(sheets_doc);
+    let r = await put_file(this.s3, path, body, meta);
+    toaster.closeAll();
+    toaster.success("Done with upload to S3!");
+    console.log(r);
   }
   credSubmit(cred) {
     console.log("cred submit", cred);
     this.setState({ cred });
-    set_cred_params(cred);
+    this.s3 = setup_s3(this.state.cred);
+    // make this optional
+    // set_cred_params(cred);
   }
   render() {
     let full_cred_flag = has_all_cred(this.state.cred);
@@ -118,7 +157,7 @@ class App extends React.Component {
           isShown={this.state.show_sf_add}
           onCloseComplete={() => this.setState({ show_sf_add: false })}
         >
-          <SheetsFileAdd onComplete={this.sheetsComplete} />
+          <SheetsFileAdd onComplete={this.sheetsInitialLoadComplete} />
         </SideSheet>
         <SideSheet
           position={Position.BOTTOM}
@@ -151,8 +190,10 @@ class App extends React.Component {
         <Pane>
           {full_cred_flag ? <ExistingEntries cred={this.state.cred} /> : ``}
         </Pane>
-        {/*<Button>Hello {this.props.name}</Button>*/}
-        {/*<SheetsFileAdd onComplete={this.sheetsComplete} />*/}
+        <Button>
+          Hello {this.state.file_list ? this.state.file_list.length : ""}
+        </Button>
+        {/*<SheetsFileAdd onComplete={this.sheetsInitialLoadComplete} />*/}
       </Pane>
     );
   }
