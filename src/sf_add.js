@@ -13,13 +13,13 @@ export default class SheetsFileAdd extends React.Component {
   constructor(props) {
     super(props);
     this.onSubmit = this.onSubmit.bind(this);
-    // this.state = { name: "", key: "", path: "", working: false };
+    // this.state = { name: "", sheets_key: "", path: "", working: false };
     // using a stub
     // XXX JUST FOR DEV
     console.log("populating add sheetsfile for dev");
     this.state = {
       name: "A human readable name",
-      key: "1aySa6njMLlXT39FHm5ikHCxoxHF-HY0JF76ERzTxm88",
+      sheets_key: "1aySa6njMLlXT39FHm5ikHCxoxHF-HY0JF76ERzTxm88",
       path: "some_area/a_project",
       working: false
     };
@@ -30,7 +30,8 @@ export default class SheetsFileAdd extends React.Component {
     }
     this.setState({ working: true });
     // we may want to do more validation here...
-    let isvalid = this.state["name"] && this.state["key"] && this.state["path"];
+    let isvalid =
+      this.state["name"] && this.state["sheets_key"] && this.state["path"];
     if (!isvalid) {
       toaster.warning(
         "The form has a missing or invalid field, please fix it first."
@@ -38,7 +39,7 @@ export default class SheetsFileAdd extends React.Component {
       return;
     }
     toaster.notify("Fetching the Google Sheets Document...", { duration: 120 });
-    let sheets_doc = await get_sheetsdoc(this.state["key"]);
+    let sheets_doc = await get_sheetsdoc(this.state["sheets_key"]);
     // console.log(sheets_doc);
     toaster.closeAll();
     toaster.success(`Successfully loaded data for "${this.state.name}"`);
@@ -87,13 +88,13 @@ export default class SheetsFileAdd extends React.Component {
             let url = e.target.value;
             let pre_token = "/spreadsheets/d/";
             try {
-              let key = url
+              let sheets_key = url
                 .slice(url.indexOf(pre_token) + pre_token.length)
                 .split("/")[0];
-              this.setState({ key });
+              this.setState({ sheets_key });
             } catch (e) {}
           }}
-          // value={this.state.key}
+          // value={this.state.sheets_key}
         />
         <Button
           appearance="primary"

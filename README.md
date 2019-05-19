@@ -16,9 +16,13 @@ https://github.com/awslabs/aws-js-s3-explorer
     <AllowedMethod>DELETE</AllowedMethod>
     <ExposeHeader>ETag</ExposeHeader>
     <ExposeHeader>x-amz-meta-custom-header</ExposeHeader>
+    <ExposeHeader>x-amz-meta-from</ExposeHeader>
+    <ExposeHeader>x-amz-meta-name</ExposeHeader>
+    <ExposeHeader>x-amz-meta-sheets_key</ExposeHeader>
     <AllowedHeader>*</AllowedHeader>
 </CORSRule>
 </CORSConfiguration>
+
 
 
 
