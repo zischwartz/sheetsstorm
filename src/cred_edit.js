@@ -41,9 +41,10 @@ export default class CredEdit extends React.Component {
         </Pane>
         <Pane padding={10} marginY={8}>
           <Paragraph marginY={4} marginX="auto">
-            Sheets Storm is a web application built to turn Google Spreadsheets
-            into JSON deployed on AWS S3 with the click of a button (and revert
-            back to previous versions if someone makes a mistake!)
+            Sheets Storm is a web application built to turn Google Drive
+            (Spread) Sheets into JSON deployed on AWS S3 with the click of a
+            button (and revert back to previous versions if someone makes a
+            mistake!)
           </Paragraph>
           <Paragraph marginY={4} marginX="auto" />
 
@@ -71,6 +72,7 @@ export default class CredEdit extends React.Component {
           onKeyPress={on_enter}
           onChange={e => this.setState({ secret_access_key: e.target.value })}
           value={this.state.secret_access_key}
+          autocomplete="new-password"
         />
         <TextInputField
           placeholder="Some general bucket"
@@ -87,10 +89,15 @@ export default class CredEdit extends React.Component {
           value={this.state.region}
         />
         <Checkbox
-          label="Update Page URL With These Settings"
+          label="Update Page URL With These Settings (Turn this off if using a public computer)"
           checked={this.state.update_url}
           onChange={e => this.setState({ update_url: e.target.checked })}
         />
+        <Heading size={300} textAlign="center">
+          We don't store or transmit any of your data (except to AWS). We don't
+          even have a server.
+        </Heading>
+
         <Button
           appearance="primary"
           iconBefore="lock"
