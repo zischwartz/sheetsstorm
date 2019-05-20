@@ -58240,7 +58240,7 @@ function get_cred_params() {
     bucket: urlParams.get("bucket") || "",
     key_id: urlParams.get("key_id") || "",
     secret_access_key: urlParams.get("secret_access_key") || "",
-    region: urlParams.get("region") || ""
+    region: urlParams.get("region") || "us-west-2"
   };
 }
 
@@ -72584,11 +72584,12 @@ function (_React$Component) {
         padding: 10,
         marginY: 8
       }, React.createElement(_typography.Paragraph, {
-        maxWidth: 450,
         marginY: 4,
         marginX: "auto"
-      }, "Sheets Storm is a web application built to turn Google Spreadsheets into JSON deployed on AWS S3 with the click of a button (and revert back if someone makes a mistake!)"), React.createElement(_typography.Paragraph, {
-        maxWidth: 450,
+      }, "Sheets Storm is a web application built to turn Google Spreadsheets into JSON deployed on AWS S3 with the click of a button (and revert back to previous versions if someone makes a mistake!)"), React.createElement(_typography.Paragraph, {
+        marginY: 4,
+        marginX: "auto"
+      }), React.createElement(_typography.Paragraph, {
         marginY: 4,
         marginX: "auto"
       }, "Enter your information below, or visit the", " ", React.createElement(_typography.Link, {
@@ -72738,6 +72739,8 @@ var _badges = require("evergreen-ui/esm/badges");
 
 var _util = require("./util");
 
+var _get_sheetsdoc = require("./get_sheetsdoc");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -72803,7 +72806,7 @@ function (_React$Component) {
                 });
 
                 _context.next = 5;
-                return get_sheetsdoc(sheets_key);
+                return (0, _get_sheetsdoc.get_sheetsdoc)(sheets_key);
 
               case 5:
                 sheets_doc = _context.sent;
@@ -72967,12 +72970,18 @@ function (_React$Component) {
               case 7:
                 archive = _context4.sent;
                 archive = archive.Contents;
+                archive = archive.sort(function (a, b) {
+                  return +b.LastModified - +a.LastModified;
+                }); // console.log(archive);
+
                 file_data_obj = JSON.parse(prod_file.Body.toString());
                 overview = Object.keys(file_data_obj).map(function (table_name) {
                   var rows = file_data_obj[table_name].length;
+                  var cols = Object.keys(file_data_obj[table_name][0]);
                   return {
                     table_name: table_name,
-                    rows: rows
+                    rows: rows,
+                    cols: cols
                   };
                 });
                 this.setState({
@@ -72984,7 +72993,7 @@ function (_React$Component) {
                 // console.log(prod_file.Metadata);
                 // console.log(prod_file);
 
-              case 12:
+              case 13:
               case "end":
                 return _context4.stop();
             }
@@ -73007,13 +73016,15 @@ function (_React$Component) {
           bucket = _this$props$cred.bucket,
           region = _this$props$cred.region;
       var full_path = "https://".concat(bucket, ".s3.").concat(region, ".amazonaws.com/").concat(this.props.selected);
-      return React.createElement(_layers.Pane, {
+      var d = new Date(parseInt(this.state.meta.from));
+      var active_date = (0, _util.to_human_date)(d);
+      return React.createElement(_layers.Pane, null, React.createElement(_layers.Pane, {
         padding: 8,
         margin: 8
       }, React.createElement(_typography.Heading, {
         size: 700,
         marginY: 16
-      }, this.state.meta ? this.state.meta.name : React.createElement(_spinner.Spinner, null)), React.createElement(_typography.Heading, {
+      }, this.state.meta ? this.state.meta.name : "..."), React.createElement(_typography.Heading, {
         marginY: 16
       }, React.createElement(_typography.Link, {
         href: full_path,
@@ -73065,22 +73076,31 @@ function (_React$Component) {
         }, "Revert To This Version") : React.createElement(_badges.Badge, {
           color: "green"
         }, "Active"));
-      }), React.createElement(_layers.Pane, {
-        margin: 16,
+      })), React.createElement(_layers.Pane, {
+        marginY: 16,
+        borderTop: true,
         padding: 16,
         background: "tint1"
+      }, React.createElement(_layers.Pane, {
+        display: "flex",
+        justifyContent: "space-between"
       }, React.createElement(_typography.Heading, {
-        marginBottom: 16
-      }, "Overview of Active File"), this.state.overview.map(function (_ref) {
+        marginBottom: 16,
+        size: 500
+      }, "Overview of Active File"), React.createElement(_typography.Heading, {
+        marginBottom: 16,
+        size: 400
+      }, active_date)), this.state.overview.map(function (_ref) {
         var table_name = _ref.table_name,
-            rows = _ref.rows;
+            rows = _ref.rows,
+            cols = _ref.cols;
         return React.createElement(_layers.Pane, {
           key: table_name,
           display: "flex",
           justifyContent: "space-between",
           borderBottom: true,
           marginBottom: 2
-        }, React.createElement(_typography.Code, null, table_name), React.createElement(_typography.Text, null, rows, " rows"));
+        }, React.createElement(_typography.Code, null, table_name), React.createElement(_typography.Text, null, rows, " rows x ", cols.length, " cols"));
       })));
     }
   }]);
@@ -73089,7 +73109,7 @@ function (_React$Component) {
 }(React.Component);
 
 exports.default = SingleFile;
-},{"clipboard-copy":"../node_modules/clipboard-copy/index.js","evergreen-ui/esm/layers":"../node_modules/evergreen-ui/esm/layers/index.js","evergreen-ui/esm/typography":"../node_modules/evergreen-ui/esm/typography/index.js","evergreen-ui/esm/Buttons":"../node_modules/evergreen-ui/esm/Buttons/index.js","evergreen-ui/esm/text-input":"../node_modules/evergreen-ui/esm/text-input/index.js","evergreen-ui/esm/menu":"../node_modules/evergreen-ui/esm/menu/index.js","evergreen-ui/esm/toaster":"../node_modules/evergreen-ui/esm/toaster/index.js","evergreen-ui/esm/spinner":"../node_modules/evergreen-ui/esm/spinner/index.js","evergreen-ui/esm/constants":"../node_modules/evergreen-ui/esm/constants/index.js","evergreen-ui/esm/badges":"../node_modules/evergreen-ui/esm/badges/index.js","./util":"util.js"}],"existing.js":[function(require,module,exports) {
+},{"clipboard-copy":"../node_modules/clipboard-copy/index.js","evergreen-ui/esm/layers":"../node_modules/evergreen-ui/esm/layers/index.js","evergreen-ui/esm/typography":"../node_modules/evergreen-ui/esm/typography/index.js","evergreen-ui/esm/Buttons":"../node_modules/evergreen-ui/esm/Buttons/index.js","evergreen-ui/esm/text-input":"../node_modules/evergreen-ui/esm/text-input/index.js","evergreen-ui/esm/menu":"../node_modules/evergreen-ui/esm/menu/index.js","evergreen-ui/esm/toaster":"../node_modules/evergreen-ui/esm/toaster/index.js","evergreen-ui/esm/spinner":"../node_modules/evergreen-ui/esm/spinner/index.js","evergreen-ui/esm/constants":"../node_modules/evergreen-ui/esm/constants/index.js","evergreen-ui/esm/badges":"../node_modules/evergreen-ui/esm/badges/index.js","./util":"util.js","./get_sheetsdoc":"get_sheetsdoc.js"}],"existing.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -73552,7 +73572,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60776" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59628" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
