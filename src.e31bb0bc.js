@@ -58177,16 +58177,24 @@ function cleanPath(path) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.to_human_date = to_human_date;
 exports.asyncForEach = asyncForEach;
 exports.get_cred_params = get_cred_params;
 exports.set_cred_params = set_cred_params;
 exports.has_all_cred = has_all_cred;
+exports.setup_s3 = setup_s3;
+exports.get_files = get_files;
+exports.put_file = put_file;
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
 // import regeneratorRuntime from "regenerator-runtime";
+function to_human_date(date) {
+  return "".concat(date.toDateString(), " at ").concat(date.toLocaleTimeString());
+}
+
 function asyncForEach(_x, _x2) {
   return _asyncForEach.apply(this, arguments);
 }
@@ -58231,7 +58239,8 @@ function get_cred_params() {
   return {
     bucket: urlParams.get("bucket") || "",
     key_id: urlParams.get("key_id") || "",
-    secret_access_key: urlParams.get("secret_access_key") || ""
+    secret_access_key: urlParams.get("secret_access_key") || "",
+    region: urlParams.get("region") || ""
   };
 }
 
@@ -58240,11 +58249,78 @@ function set_cred_params(cred) {
   urlParams.set("bucket", cred.bucket);
   urlParams.set("key_id", cred.key_id);
   urlParams.set("secret_access_key", cred.secret_access_key);
+  urlParams.set("region", cred.region);
   window.location.search = urlParams.toString();
 }
 
 function has_all_cred(cred) {
-  return cred["bucket"].length && cred["key_id"].length && cred["secret_access_key"].length;
+  return cred["bucket"].length && cred["key_id"].length && cred["secret_access_key"].length // cred["region"].length
+  ;
+} // AWS S3 helpers
+
+
+function setup_s3(cred) {
+  AWS.config.credentials = {
+    accessKeyId: cred.key_id,
+    secretAccessKey: cred.secret_access_key
+  };
+  var region = cred.region || "us-west-2";
+  AWS.config.update({
+    region: region
+  });
+  var s3 = new AWS.S3({
+    apiVersion: "2006-03-01",
+    params: {
+      Bucket: cred.bucket
+    }
+  });
+  return s3;
+}
+
+function get_files(_x3) {
+  return _get_files.apply(this, arguments);
+}
+
+function _get_files() {
+  _get_files = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee2(s3) {
+    var Prefix,
+        res,
+        _args2 = arguments;
+    return regeneratorRuntime.wrap(function _callee2$(_context2) {
+      while (1) {
+        switch (_context2.prev = _context2.next) {
+          case 0:
+            Prefix = _args2.length > 1 && _args2[1] !== undefined ? _args2[1] : "";
+            _context2.next = 3;
+            return s3.listObjects({
+              Delimiter: "",
+              Prefix: Prefix
+            }).promise();
+
+          case 3:
+            res = _context2.sent;
+            return _context2.abrupt("return", res ? res["Contents"] : []);
+
+          case 5:
+          case "end":
+            return _context2.stop();
+        }
+      }
+    }, _callee2);
+  }));
+  return _get_files.apply(this, arguments);
+}
+
+function put_file(s3, Key, Body, Metadata) {
+  var params = {
+    Key: Key,
+    Body: Body,
+    Metadata: Metadata,
+    ContentType: "application/json"
+  };
+  return s3.putObject(params).promise();
 }
 },{}],"../fixtures/raai_index_2019.json":[function(require,module,exports) {
 module.exports = {
@@ -71726,20 +71802,21 @@ function _get_sheetsdoc() {
         switch (_context2.prev = _context2.next) {
           case 0:
             result = {};
-            _context2.next = 3;
+            _context2.prev = 1;
+            _context2.next = 4;
             return gapi.client.init({
               apiKey: "AIzaSyATY6KDl2wTJL1DZEYqhhkL5ktgfm1e7d8"
             });
 
-          case 3:
-            _context2.next = 5;
+          case 4:
+            _context2.next = 6;
             return gapi.client.request({
               path: "https://sheets.googleapis.com/v4/spreadsheets/".concat(sheets_doc_key, "?&fields=sheets.properties")
             });
 
-          case 5:
+          case 6:
             sheets_arr = _context2.sent;
-            _context2.next = 8;
+            _context2.next = 9;
             return (0, _util.asyncForEach)(sheets_arr.result.sheets,
             /*#__PURE__*/
             function () {
@@ -71775,15 +71852,21 @@ function _get_sheetsdoc() {
               };
             }());
 
-          case 8:
+          case 9:
             return _context2.abrupt("return", result);
 
-          case 9:
+          case 12:
+            _context2.prev = 12;
+            _context2.t0 = _context2["catch"](1);
+            console.log(_context2.t0);
+            return _context2.abrupt("return", false);
+
+          case 16:
           case "end":
             return _context2.stop();
         }
       }
-    }, _callee2);
+    }, _callee2, null, [[1, 12]]);
   }));
   return _get_sheetsdoc.apply(this, arguments);
 }
@@ -71940,17 +72023,16 @@ function (_React$Component) {
     _classCallCheck(this, SheetsFileAdd);
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(SheetsFileAdd).call(this, props));
-    _this.onSubmit = _this.onSubmit.bind(_assertThisInitialized(_this)); // this.state = { name: "", sheets_key: "", path: "", working: false };
-    // using a stub
-    // XXX JUST FOR DEV
-
-    console.log("populating add sheetsfile for dev");
+    _this.onSubmit = _this.onSubmit.bind(_assertThisInitialized(_this));
     _this.state = {
-      name: "A human readable name",
-      sheets_key: "1aySa6njMLlXT39FHm5ikHCxoxHF-HY0JF76ERzTxm88",
-      path: "some_area/a_project",
+      name: "",
+      sheets_key: "",
+      path: "",
       working: false
-    };
+    }; // XXX JUST FOR DEV
+    // console.log("populating add sheetsfile for dev");
+    // this.state = { name: "A human readable name", sheets_key: "1aySa6njMLlXT39FHm5ikHCxoxHF-HY0JF76ERzTxm88", path: "some_area/a_project", working: false };
+
     return _this;
   }
 
@@ -71960,7 +72042,8 @@ function (_React$Component) {
       var _onSubmit = _asyncToGenerator(
       /*#__PURE__*/
       regeneratorRuntime.mark(function _callee() {
-        var isvalid, sheets_doc;
+        var _this$state, name, sheets_key, path, is_valid, file_list, existing_paths, sheets_doc;
+
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
@@ -71973,40 +72056,99 @@ function (_React$Component) {
                 return _context.abrupt("return");
 
               case 2:
-                this.setState({
-                  working: true
-                }); // we may want to do more validation here...
+                // we may want to do more validation here...
+                _this$state = this.state, name = _this$state.name, sheets_key = _this$state.sheets_key, path = _this$state.path;
+                path = path.trim();
+                is_valid = name.length && sheets_key.length && path.length;
+                is_valid = is_valid && !path.includes(" ");
 
-                isvalid = this.state["name"] && this.state["sheets_key"] && this.state["path"];
-
-                if (isvalid) {
-                  _context.next = 7;
+                if (is_valid) {
+                  _context.next = 10;
                   break;
                 }
+
+                _toaster.toaster.closeAll(); // prettier-ignore
+
 
                 _toaster.toaster.warning("The form has a missing or invalid field, please fix it first.");
 
                 return _context.abrupt("return");
 
-              case 7:
+              case 10:
+                // a quick way to go from `prod/somearea/someproj.json` to `somearea/someproj`
+                file_list = this.props.file_list;
+                existing_paths = file_list.map(function (p) {
+                  return p.Key.slice(5).slice(0, -5);
+                });
+
+                if (!existing_paths.includes(path)) {
+                  _context.next = 16;
+                  break;
+                }
+
+                _toaster.toaster.closeAll(); // prettier-ignore
+
+
+                _toaster.toaster.warning("A File with that path already exists! You can't add it again, but you can go update it.");
+
+                return _context.abrupt("return");
+
+              case 16:
+                if (!(path.includes("archive/") || path.includes("prod/") || path.includes(".json"))) {
+                  _context.next = 20;
+                  break;
+                }
+
+                _toaster.toaster.closeAll(); // prettier-ignore
+
+
+                _toaster.toaster.warning("Path contains blacklisted string, try again please");
+
+                return _context.abrupt("return");
+
+              case 20:
+                this.setState({
+                  working: true
+                });
+
                 _toaster.toaster.notify("Fetching the Google Sheets Document...", {
                   duration: 120
                 });
 
-                _context.next = 10;
+                _context.next = 24;
                 return (0, _get_sheetsdoc.get_sheetsdoc)(this.state["sheets_key"]);
 
-              case 10:
+              case 24:
                 sheets_doc = _context.sent;
 
+                if (sheets_doc) {
+                  _context.next = 30;
+                  break;
+                }
+
+                _toaster.toaster.closeAll(); // prettier-ignore
+
+
+                _toaster.toaster.warning("There was a problem getting the file from Google Sheets. Please check the url and make sure it's set to public.");
+
+                this.setState({
+                  working: false
+                });
+                return _context.abrupt("return");
+
+              case 30:
                 // console.log(sheets_doc);
                 _toaster.toaster.closeAll();
 
                 _toaster.toaster.success("Successfully loaded data for \"".concat(this.state.name, "\""));
 
-                this.props.onComplete(this.state, sheets_doc);
+                this.props.onComplete({
+                  name: name,
+                  sheets_key: sheets_key,
+                  path: path
+                }, sheets_doc); // this.props.onComplete(this.state, sheets_doc);
 
-              case 14:
+              case 33:
               case "end":
                 return _context.stop();
             }
@@ -72097,7 +72239,252 @@ function (_React$Component) {
 }(React.Component);
 
 exports.default = SheetsFileAdd;
-},{"evergreen-ui/esm/layers":"../node_modules/evergreen-ui/esm/layers/index.js","evergreen-ui/esm/side-sheet":"../node_modules/evergreen-ui/esm/side-sheet/index.js","evergreen-ui/esm/typography":"../node_modules/evergreen-ui/esm/typography/index.js","evergreen-ui/esm/Buttons":"../node_modules/evergreen-ui/esm/Buttons/index.js","evergreen-ui/esm/text-input":"../node_modules/evergreen-ui/esm/text-input/index.js","evergreen-ui/esm/menu":"../node_modules/evergreen-ui/esm/menu/index.js","evergreen-ui/esm/toaster":"../node_modules/evergreen-ui/esm/toaster/index.js","./get_sheetsdoc":"get_sheetsdoc.js"}],"cred_edit.js":[function(require,module,exports) {
+},{"evergreen-ui/esm/layers":"../node_modules/evergreen-ui/esm/layers/index.js","evergreen-ui/esm/side-sheet":"../node_modules/evergreen-ui/esm/side-sheet/index.js","evergreen-ui/esm/typography":"../node_modules/evergreen-ui/esm/typography/index.js","evergreen-ui/esm/Buttons":"../node_modules/evergreen-ui/esm/Buttons/index.js","evergreen-ui/esm/text-input":"../node_modules/evergreen-ui/esm/text-input/index.js","evergreen-ui/esm/menu":"../node_modules/evergreen-ui/esm/menu/index.js","evergreen-ui/esm/toaster":"../node_modules/evergreen-ui/esm/toaster/index.js","./get_sheetsdoc":"get_sheetsdoc.js"}],"../node_modules/evergreen-ui/esm/checkbox/src/Checkbox.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/objectSpread"));
+
+var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/classCallCheck"));
+
+var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/createClass"));
+
+var _possibleConstructorReturn2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/possibleConstructorReturn"));
+
+var _getPrototypeOf3 = _interopRequireDefault(require("@babel/runtime/helpers/esm/getPrototypeOf"));
+
+var _assertThisInitialized2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/assertThisInitialized"));
+
+var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/inherits"));
+
+var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/defineProperty"));
+
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/extends"));
+
+var _objectWithoutProperties2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/objectWithoutProperties"));
+
+var _react = _interopRequireWildcard(require("react"));
+
+var _propTypes = _interopRequireDefault(require("prop-types"));
+
+var _uiBox = _interopRequireWildcard(require("ui-box"));
+
+var _typography = require("../../typography");
+
+var _theme = require("../../theme");
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var CheckIcon = function CheckIcon(_ref) {
+  var _ref$fill = _ref.fill,
+      fill = _ref$fill === void 0 ? 'currentColor' : _ref$fill,
+      props = (0, _objectWithoutProperties2.default)(_ref, ["fill"]);
+  return _react.default.createElement("svg", (0, _extends2.default)({
+    width: 10,
+    height: 7,
+    viewBox: "0 0 10 7"
+  }, props), _react.default.createElement("path", {
+    fill: fill,
+    fillRule: "evenodd",
+    d: "M4 4.586L1.707 2.293A1 1 0 1 0 .293 3.707l3 3a.997.997 0 0 0 1.414 0l5-5A1 1 0 1 0 8.293.293L4 4.586z"
+  }));
+};
+
+CheckIcon.displayName = "CheckIcon";
+CheckIcon.propTypes = {
+  fill: _propTypes.default.string
+};
+
+var MinusIcon = function MinusIcon(_ref2) {
+  var _ref2$fill = _ref2.fill,
+      fill = _ref2$fill === void 0 ? 'currentColor' : _ref2$fill,
+      props = (0, _objectWithoutProperties2.default)(_ref2, ["fill"]);
+  return _react.default.createElement("svg", (0, _extends2.default)({
+    width: 16,
+    height: 16,
+    viewBox: "0 0 16 16"
+  }, props), _react.default.createElement("path", {
+    fill: fill,
+    fillRule: "evenodd",
+    d: "M11 7H5c-.55 0-1 .45-1 1s.45 1 1 1h6c.55 0 1-.45 1-1s-.45-1-1-1z"
+  }));
+};
+
+MinusIcon.displayName = "MinusIcon";
+MinusIcon.propTypes = {
+  fill: _propTypes.default.string
+};
+
+var Checkbox =
+/*#__PURE__*/
+function (_PureComponent) {
+  (0, _inherits2.default)(Checkbox, _PureComponent);
+
+  function Checkbox() {
+    var _getPrototypeOf2;
+
+    var _this;
+
+    (0, _classCallCheck2.default)(this, Checkbox);
+
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    _this = (0, _possibleConstructorReturn2.default)(this, (_getPrototypeOf2 = (0, _getPrototypeOf3.default)(Checkbox)).call.apply(_getPrototypeOf2, [this].concat(args)));
+    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "setIndeterminate", function (el) {
+      if (!el) return;
+      el.indeterminate = _this.props.indeterminate;
+    });
+    return _this;
+  }
+
+  (0, _createClass2.default)(Checkbox, [{
+    key: "render",
+    value: function render() {
+      var _this$props = this.props,
+          theme = _this$props.theme,
+          id = _this$props.id,
+          name = _this$props.name,
+          label = _this$props.label,
+          appearance = _this$props.appearance,
+          disabled = _this$props.disabled,
+          isInvalid = _this$props.isInvalid,
+          checked = _this$props.checked,
+          onChange = _this$props.onChange,
+          value = _this$props.value,
+          indeterminate = _this$props.indeterminate,
+          props = (0, _objectWithoutProperties2.default)(_this$props, ["theme", "id", "name", "label", "appearance", "disabled", "isInvalid", "checked", "onChange", "value", "indeterminate"]);
+      var themedClassName = theme.getCheckboxClassName(appearance);
+      return _react.default.createElement(_uiBox.default, (0, _extends2.default)({
+        is: "label",
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        position: "relative",
+        display: "flex",
+        marginY: 16
+      }, props), _react.default.createElement(_uiBox.default, {
+        className: themedClassName,
+        is: "input",
+        id: id,
+        type: "checkbox",
+        name: name,
+        value: value,
+        checked: checked || indeterminate,
+        onChange: onChange,
+        disabled: disabled,
+        "aria-invalid": isInvalid,
+        innerRef: this.setIndeterminate
+      }), _react.default.createElement(_uiBox.default, {
+        boxSizing: "border-box",
+        borderRadius: 3,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: 16,
+        height: 16
+      }, indeterminate ? _react.default.createElement(MinusIcon, null) : _react.default.createElement(CheckIcon, null)), label && _react.default.createElement(_typography.Text, {
+        marginLeft: 8,
+        size: 300,
+        color: disabled ? 'muted' : 'default'
+      }, label));
+    }
+  }]);
+  return Checkbox;
+}(_react.PureComponent);
+
+Checkbox.displayName = "Checkbox";
+(0, _defineProperty2.default)(Checkbox, "propTypes", (0, _objectSpread2.default)({}, _uiBox.spacing.propTypes, _uiBox.position.propTypes, _uiBox.layout.propTypes, _uiBox.dimensions.propTypes, {
+  /**
+   * The id attribute of the checkbox.
+   */
+  id: _propTypes.default.string,
+
+  /**
+   * The id attribute of the radio.
+   */
+  name: _propTypes.default.string,
+
+  /**
+   * Label of the checkbox.
+   */
+  label: _propTypes.default.node,
+
+  /**
+   * The value attribute of the radio.
+   */
+  value: _propTypes.default.string,
+
+  /**
+   * The checked attribute of the radio.
+   */
+  checked: _propTypes.default.bool,
+
+  /**
+   * State in addition to "checked" and "unchecked".
+   * When true, the radio displays a "minus" icon.
+   */
+  indeterminate: _propTypes.default.bool,
+
+  /**
+   * Function called when state changes.
+   */
+  onChange: _propTypes.default.func,
+
+  /**
+   * When true, the radio is disabled.
+   */
+  disabled: _propTypes.default.bool,
+
+  /**
+   * When true, the aria-invalid attribute is true.
+   * Used for accessibility.
+   */
+  isInvalid: _propTypes.default.bool,
+
+  /**
+   * The appearance of the checkbox.
+   * The default theme only comes with a default style.
+   */
+  appearance: _propTypes.default.string,
+
+  /**
+   * Theme provided by ThemeProvider.
+   */
+  theme: _propTypes.default.object.isRequired
+}));
+(0, _defineProperty2.default)(Checkbox, "defaultProps", {
+  checked: false,
+  indeterminate: false,
+  onChange: function onChange() {},
+  appearance: 'default'
+});
+
+var _default = (0, _theme.withTheme)(Checkbox);
+
+exports.default = _default;
+},{"@babel/runtime/helpers/esm/objectSpread":"../node_modules/@babel/runtime/helpers/esm/objectSpread.js","@babel/runtime/helpers/esm/classCallCheck":"../node_modules/@babel/runtime/helpers/esm/classCallCheck.js","@babel/runtime/helpers/esm/createClass":"../node_modules/@babel/runtime/helpers/esm/createClass.js","@babel/runtime/helpers/esm/possibleConstructorReturn":"../node_modules/@babel/runtime/helpers/esm/possibleConstructorReturn.js","@babel/runtime/helpers/esm/getPrototypeOf":"../node_modules/@babel/runtime/helpers/esm/getPrototypeOf.js","@babel/runtime/helpers/esm/assertThisInitialized":"../node_modules/@babel/runtime/helpers/esm/assertThisInitialized.js","@babel/runtime/helpers/esm/inherits":"../node_modules/@babel/runtime/helpers/esm/inherits.js","@babel/runtime/helpers/esm/defineProperty":"../node_modules/@babel/runtime/helpers/esm/defineProperty.js","@babel/runtime/helpers/esm/extends":"../node_modules/@babel/runtime/helpers/esm/extends.js","@babel/runtime/helpers/esm/objectWithoutProperties":"../node_modules/@babel/runtime/helpers/esm/objectWithoutProperties.js","react":"../node_modules/react/index.js","prop-types":"../node_modules/prop-types/index.js","ui-box":"../node_modules/ui-box/lib/index.js","../../typography":"../node_modules/evergreen-ui/esm/typography/index.js","../../theme":"../node_modules/evergreen-ui/esm/theme/index.js"}],"../node_modules/evergreen-ui/esm/checkbox/index.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+Object.defineProperty(exports, "Checkbox", {
+  enumerable: true,
+  get: function () {
+    return _Checkbox.default;
+  }
+});
+
+var _Checkbox = _interopRequireDefault(require("./src/Checkbox"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+},{"./src/Checkbox":"../node_modules/evergreen-ui/esm/checkbox/src/Checkbox.js"}],"cred_edit.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -72118,6 +72505,8 @@ var _textInput = require("evergreen-ui/esm/text-input");
 var _menu = require("evergreen-ui/esm/menu");
 
 var _toaster = require("evergreen-ui/esm/toaster");
+
+var _checkbox = require("evergreen-ui/esm/checkbox");
 
 var _get_sheetsdoc = require("./get_sheetsdoc");
 
@@ -72150,22 +72539,20 @@ function (_React$Component) {
     _classCallCheck(this, CredEdit);
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(CredEdit).call(this, props));
-
-    var _ref = props.cred || {},
-        _ref$bucket = _ref.bucket,
-        bucket = _ref$bucket === void 0 ? "" : _ref$bucket,
-        _ref$key_id = _ref.key_id,
-        key_id = _ref$key_id === void 0 ? "" : _ref$key_id,
-        _ref$secret_access_ke = _ref.secret_access_key,
-        secret_access_key = _ref$secret_access_ke === void 0 ? "" : _ref$secret_access_ke; // let { bucket = "", key_id = "", secret_access_key = "" } = props.cred;
-
-
+    var _props$cred = props.cred,
+        bucket = _props$cred.bucket,
+        key_id = _props$cred.key_id,
+        secret_access_key = _props$cred.secret_access_key,
+        region = _props$cred.region;
+    region = region.length ? region : "us-west-2";
+    var update_url = true;
     _this.state = {
       bucket: bucket,
       key_id: key_id,
-      secret_access_key: secret_access_key
-    }; // this.state = { bucket: "", key_id: "", secret_access_key: "" };
-
+      secret_access_key: secret_access_key,
+      region: region,
+      update_url: update_url
+    };
     return _this;
   }
 
@@ -72222,6 +72609,24 @@ function (_React$Component) {
           });
         },
         value: this.state.bucket
+      }), React.createElement(_textInput.TextInputField, {
+        placeholder: "us-west-2",
+        label: "AWS Region",
+        onKeyPress: on_enter,
+        onChange: function onChange(e) {
+          return _this2.setState({
+            region: e.target.value
+          });
+        },
+        value: this.state.region
+      }), React.createElement(_checkbox.Checkbox, {
+        label: "Update Page URL With These Settings",
+        checked: this.state.update_url,
+        onChange: function onChange(e) {
+          return _this2.setState({
+            update_url: e.target.checked
+          });
+        }
       }), React.createElement(_Buttons.Button, {
         appearance: "primary",
         iconBefore: "lock",
@@ -72237,7 +72642,364 @@ function (_React$Component) {
 }(React.Component);
 
 exports.default = CredEdit;
-},{"evergreen-ui/esm/layers":"../node_modules/evergreen-ui/esm/layers/index.js","evergreen-ui/esm/side-sheet":"../node_modules/evergreen-ui/esm/side-sheet/index.js","evergreen-ui/esm/typography":"../node_modules/evergreen-ui/esm/typography/index.js","evergreen-ui/esm/Buttons":"../node_modules/evergreen-ui/esm/Buttons/index.js","evergreen-ui/esm/text-input":"../node_modules/evergreen-ui/esm/text-input/index.js","evergreen-ui/esm/menu":"../node_modules/evergreen-ui/esm/menu/index.js","evergreen-ui/esm/toaster":"../node_modules/evergreen-ui/esm/toaster/index.js","./get_sheetsdoc":"get_sheetsdoc.js"}],"index.js":[function(require,module,exports) {
+},{"evergreen-ui/esm/layers":"../node_modules/evergreen-ui/esm/layers/index.js","evergreen-ui/esm/side-sheet":"../node_modules/evergreen-ui/esm/side-sheet/index.js","evergreen-ui/esm/typography":"../node_modules/evergreen-ui/esm/typography/index.js","evergreen-ui/esm/Buttons":"../node_modules/evergreen-ui/esm/Buttons/index.js","evergreen-ui/esm/text-input":"../node_modules/evergreen-ui/esm/text-input/index.js","evergreen-ui/esm/menu":"../node_modules/evergreen-ui/esm/menu/index.js","evergreen-ui/esm/toaster":"../node_modules/evergreen-ui/esm/toaster/index.js","evergreen-ui/esm/checkbox":"../node_modules/evergreen-ui/esm/checkbox/index.js","./get_sheetsdoc":"get_sheetsdoc.js"}],"single_file.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _layers = require("evergreen-ui/esm/layers");
+
+var _typography = require("evergreen-ui/esm/typography");
+
+var _Buttons = require("evergreen-ui/esm/Buttons");
+
+var _textInput = require("evergreen-ui/esm/text-input");
+
+var _menu = require("evergreen-ui/esm/menu");
+
+var _toaster = require("evergreen-ui/esm/toaster");
+
+var _spinner = require("evergreen-ui/esm/spinner");
+
+var _constants = require("evergreen-ui/esm/constants");
+
+var _badges = require("evergreen-ui/esm/badges");
+
+var _util = require("./util");
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+var SingleFile =
+/*#__PURE__*/
+function (_React$Component) {
+  _inherits(SingleFile, _React$Component);
+
+  function SingleFile(props) {
+    var _this;
+
+    _classCallCheck(this, SingleFile);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(SingleFile).call(this, props));
+    _this.revertTo = _this.revertTo.bind(_assertThisInitialized(_this));
+    _this.state = {
+      meta: false,
+      archive: false,
+      overview: []
+    };
+    return _this;
+  }
+
+  _createClass(SingleFile, [{
+    key: "addUpdate",
+    value: function () {
+      var _addUpdate = _asyncToGenerator(
+      /*#__PURE__*/
+      regeneratorRuntime.mark(function _callee() {
+        var meta, sheets_key, sheets_doc, path, info;
+        return regeneratorRuntime.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                // console.log(this.state);
+                // console.log(this.state.meta.sheets_key);
+                meta = this.state.meta;
+                sheets_key = meta.sheets_key;
+
+                _toaster.toaster.notify("Fetching the Google Sheets Document...", {
+                  duration: 120
+                });
+
+                _context.next = 5;
+                return get_sheetsdoc(sheets_key);
+
+              case 5:
+                sheets_doc = _context.sent;
+
+                if (sheets_doc) {
+                  _context.next = 10;
+                  break;
+                }
+
+                _toaster.toaster.closeAll(); // prettier-ignore
+
+
+                _toaster.toaster.warning("There was a problem getting the file from Google Sheets. Make sure it's set to public.");
+
+                return _context.abrupt("return");
+
+              case 10:
+                _toaster.toaster.closeAll();
+
+                _toaster.toaster.success("Successfully Loaded Latest Sheets Data");
+
+                path = this.props.selected.split(".json")[0].replace("prod/", "");
+                info = {
+                  name: meta.name,
+                  sheets_key: sheets_key,
+                  path: path
+                };
+                _context.next = 16;
+                return this.props.putSheetsDataToS3(info, sheets_doc);
+
+              case 16:
+                _context.next = 18;
+                return this.loadFileAndArchives();
+
+              case 18:
+              case "end":
+                return _context.stop();
+            }
+          }
+        }, _callee, this);
+      }));
+
+      function addUpdate() {
+        return _addUpdate.apply(this, arguments);
+      }
+
+      return addUpdate;
+    }()
+  }, {
+    key: "revertTo",
+    value: function () {
+      var _revertTo = _asyncToGenerator(
+      /*#__PURE__*/
+      regeneratorRuntime.mark(function _callee2(path_of_archive) {
+        var ts, _this$state$meta, sheets_key, name, archive_file, meta;
+
+        return regeneratorRuntime.wrap(function _callee2$(_context2) {
+          while (1) {
+            switch (_context2.prev = _context2.next) {
+              case 0:
+                _toaster.toaster.notify("Reverting", {
+                  duration: 120
+                });
+
+                ts = /(\d+).json/g.exec(path_of_archive)[1];
+                _this$state$meta = this.state.meta, sheets_key = _this$state$meta.sheets_key, name = _this$state$meta.name;
+                _context2.next = 5;
+                return this.props.s3.getObject({
+                  Key: path_of_archive
+                }).promise();
+
+              case 5:
+                archive_file = _context2.sent;
+                meta = {
+                  name: name,
+                  from: ts,
+                  sheets_key: sheets_key
+                };
+                _context2.next = 9;
+                return (0, _util.put_file)(this.props.s3, this.props.selected, archive_file.Body.toString(), meta);
+
+              case 9:
+                _context2.next = 11;
+                return this.loadFileAndArchives();
+
+              case 11:
+                _toaster.toaster.closeAll();
+
+                _toaster.toaster.success("Successfully Reverted");
+
+              case 13:
+              case "end":
+                return _context2.stop();
+            }
+          }
+        }, _callee2, this);
+      }));
+
+      function revertTo(_x) {
+        return _revertTo.apply(this, arguments);
+      }
+
+      return revertTo;
+    }()
+  }, {
+    key: "componentDidMount",
+    value: function () {
+      var _componentDidMount = _asyncToGenerator(
+      /*#__PURE__*/
+      regeneratorRuntime.mark(function _callee3() {
+        return regeneratorRuntime.wrap(function _callee3$(_context3) {
+          while (1) {
+            switch (_context3.prev = _context3.next) {
+              case 0:
+                _context3.next = 2;
+                return this.loadFileAndArchives();
+
+              case 2:
+              case "end":
+                return _context3.stop();
+            }
+          }
+        }, _callee3, this);
+      }));
+
+      function componentDidMount() {
+        return _componentDidMount.apply(this, arguments);
+      }
+
+      return componentDidMount;
+    }()
+  }, {
+    key: "loadFileAndArchives",
+    value: function () {
+      var _loadFileAndArchives = _asyncToGenerator(
+      /*#__PURE__*/
+      regeneratorRuntime.mark(function _callee4() {
+        var prod_file, meta, search_path, archive, file_data_obj, overview;
+        return regeneratorRuntime.wrap(function _callee4$(_context4) {
+          while (1) {
+            switch (_context4.prev = _context4.next) {
+              case 0:
+                _context4.next = 2;
+                return this.props.s3.getObject({
+                  Key: this.props.selected
+                }).promise();
+
+              case 2:
+                prod_file = _context4.sent;
+                meta = prod_file.Metadata; // console.log(prod_file);
+
+                search_path = this.props.selected.replace(".json", "").replace("prod/", "archive/");
+                _context4.next = 7;
+                return this.props.s3.listObjects({
+                  Delimiter: "",
+                  Prefix: search_path
+                }).promise().catch(function (e) {
+                  return console.log("err", e);
+                });
+
+              case 7:
+                archive = _context4.sent;
+                archive = archive.Contents;
+                file_data_obj = JSON.parse(prod_file.Body.toString());
+                overview = Object.keys(file_data_obj).map(function (table_name) {
+                  var rows = file_data_obj[table_name].length;
+                  return {
+                    table_name: table_name,
+                    rows: rows
+                  };
+                });
+                this.setState({
+                  meta: meta,
+                  archive: archive,
+                  overview: overview
+                }); // console.log(archive);
+                // meta['']
+                // console.log(prod_file.Metadata);
+                // console.log(prod_file);
+
+              case 12:
+              case "end":
+                return _context4.stop();
+            }
+          }
+        }, _callee4, this);
+      }));
+
+      function loadFileAndArchives() {
+        return _loadFileAndArchives.apply(this, arguments);
+      }
+
+      return loadFileAndArchives;
+    }()
+  }, {
+    key: "render",
+    value: function render() {
+      var _this2 = this;
+
+      var _this$props$cred = this.props.cred,
+          bucket = _this$props$cred.bucket,
+          region = _this$props$cred.region;
+      var full_path = "https://".concat(bucket, ".s3.").concat(region, ".amazonaws.com/").concat(this.props.selected);
+      return React.createElement(_layers.Pane, {
+        padding: 8,
+        margin: 8
+      }, React.createElement(_typography.Heading, {
+        size: 700,
+        marginY: 16
+      }, this.state.meta ? this.state.meta.name : ""), React.createElement(_typography.Heading, {
+        marginY: 16
+      }, this.props.selected.slice(5).slice(0, -5)), React.createElement(_typography.Paragraph, null, React.createElement(_typography.Link, {
+        href: full_path
+      }, full_path)), React.createElement(_Buttons.Button, {
+        appearance: "primary",
+        width: "100%",
+        height: 40,
+        iconBefore: "cloud-upload",
+        marginBottom: 32,
+        onClick: function onClick() {
+          return _this2.addUpdate();
+        }
+      }, "Get Google Sheets Data and Upload New Version to S3"), React.createElement(_typography.Heading, {
+        marginY: 16
+      }, "Archives"), !this.state.archive ? "" : this.state.archive.map(function (obj, i) {
+        var is_active = obj.Key.endsWith("_".concat(_this2.state.meta.from, ".json"));
+        return React.createElement(_layers.Pane, {
+          key: i,
+          background: "tint2",
+          marginY: 8,
+          padding: 8,
+          display: "flex",
+          justifyContent: "space-between"
+        }, React.createElement(_typography.Text, null, " ", is_active ? "✅" : "⏹", " ", (0, _util.to_human_date)(obj.LastModified)), !is_active ? React.createElement(_Buttons.Button, {
+          iconBefore: "undo",
+          onClick: function onClick() {
+            return _this2.revertTo(obj.Key);
+          }
+        }, "Revert To This Version") : React.createElement(_badges.Badge, {
+          color: "green"
+        }, "Active"));
+      }), React.createElement(_layers.Pane, {
+        margin: 16,
+        padding: 16,
+        background: "tint1"
+      }, React.createElement(_typography.Heading, {
+        marginBottom: 16
+      }, "Overview of Active File"), this.state.overview.map(function (_ref) {
+        var table_name = _ref.table_name,
+            rows = _ref.rows;
+        return React.createElement(_layers.Pane, {
+          key: table_name,
+          display: "flex",
+          justifyContent: "space-between",
+          borderBottom: true,
+          marginBottom: 2
+        }, React.createElement(_typography.Code, null, table_name), React.createElement(_typography.Text, null, rows, " rows"));
+      })));
+    }
+  }]);
+
+  return SingleFile;
+}(React.Component);
+
+exports.default = SingleFile;
+},{"evergreen-ui/esm/layers":"../node_modules/evergreen-ui/esm/layers/index.js","evergreen-ui/esm/typography":"../node_modules/evergreen-ui/esm/typography/index.js","evergreen-ui/esm/Buttons":"../node_modules/evergreen-ui/esm/Buttons/index.js","evergreen-ui/esm/text-input":"../node_modules/evergreen-ui/esm/text-input/index.js","evergreen-ui/esm/menu":"../node_modules/evergreen-ui/esm/menu/index.js","evergreen-ui/esm/toaster":"../node_modules/evergreen-ui/esm/toaster/index.js","evergreen-ui/esm/spinner":"../node_modules/evergreen-ui/esm/spinner/index.js","evergreen-ui/esm/constants":"../node_modules/evergreen-ui/esm/constants/index.js","evergreen-ui/esm/badges":"../node_modules/evergreen-ui/esm/badges/index.js","./util":"util.js"}],"index.js":[function(require,module,exports) {
 "use strict";
 
 require("regenerator-runtime/runtime");
@@ -72272,11 +73034,17 @@ var _sf_add = _interopRequireDefault(require("./sf_add"));
 
 var _cred_edit = _interopRequireDefault(require("./cred_edit"));
 
+var _single_file = _interopRequireDefault(require("./single_file"));
+
 var _get_sheetsdoc = require("./get_sheetsdoc");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -72294,92 +73062,6 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-// -------------------------------------
-// -------------------------------------
-// just for dev and testing !
-// import { test_get_sheetsdoc } from "./get_sheetsdoc";
-// JUST FOR DEV
-// need to load gapi first
-// gapi.load("client", () => {
-//   test_get_sheetsdoc();
-// });
-// https://docs.google.com/spreadsheets/d/1aySa6njMLlXT39FHm5ikHCxoxHF-HY0JF76ERzTxm88/edit#gid=2140363911
-function setup_s3(cred) {
-  // console.log("get all files", cred);
-  // if (!has_all_cred(cred)) {
-  //   return false;
-  // }
-  AWS.config.credentials = {
-    accessKeyId: cred.key_id,
-    secretAccessKey: cred.secret_access_key,
-    region: "us-west-2"
-  };
-  var s3 = new AWS.S3({
-    apiVersion: "2006-03-01",
-    params: {
-      Bucket: cred.bucket
-    }
-  });
-  return s3;
-}
-
-function get_files(_x) {
-  return _get_files.apply(this, arguments);
-}
-
-function _get_files() {
-  _get_files = _asyncToGenerator(
-  /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee8(s3) {
-    var Prefix,
-        res,
-        _args8 = arguments;
-    return regeneratorRuntime.wrap(function _callee8$(_context8) {
-      while (1) {
-        switch (_context8.prev = _context8.next) {
-          case 0:
-            Prefix = _args8.length > 1 && _args8[1] !== undefined ? _args8[1] : "";
-            _context8.next = 3;
-            return s3.listObjects({
-              Delimiter: "",
-              Prefix: Prefix
-            }).promise();
-
-          case 3:
-            res = _context8.sent;
-            return _context8.abrupt("return", res ? res["Contents"] : []);
-
-          case 5:
-          case "end":
-            return _context8.stop();
-        }
-      }
-    }, _callee8);
-  }));
-  return _get_files.apply(this, arguments);
-}
-
-function put_file(s3, Key, Body, Metadata) {
-  var params = {
-    Key: Key,
-    Body: Body,
-    Metadata: Metadata,
-    ContentType: "application/json"
-  };
-  return s3.putObject(params).promise();
-} // s3.getObject({Bucket: srcbucket, Key: srckey}
-// s3.listObjects({ Delimiter: "/" }, function(err, data) {
-//   console.log(err, data);
-// });
-// http://localhost:1234/?bucket=cow
-//  urlParams = new URLSearchParams(window.location.search).get("bucket")
-// console.log(process.env.GOOGLE_API_KEY);
-
-
 var App =
 /*#__PURE__*/
 function (_React$Component) {
@@ -72394,14 +73076,15 @@ function (_React$Component) {
     var cred = (0, _util.get_cred_params)();
     _this.putSheetsDataToS3 = _this.putSheetsDataToS3.bind(_assertThisInitialized(_this));
     _this.credSubmit = _this.credSubmit.bind(_assertThisInitialized(_this));
-    var show_cred = !(0, _util.has_all_cred)(cred); // this.state = { show_sf_add: false, show_cred, cred, selected: false };
-
+    var show_cred = !(0, _util.has_all_cred)(cred);
     _this.state = {
       show_sf_add: false,
       show_cred: show_cred,
       cred: cred,
-      selected: "prod/some_area/a_project.json"
-    };
+      selected: false
+    }; // e.g. / debug
+    // this.state = { show_sf_add: false, show_cred, cred, selected: "prod/some_area/a_project.json" };
+
     return _this;
   } // pass this in so we can count on it being up to date, as setstate isn't syncronous
 
@@ -72411,12 +73094,8 @@ function (_React$Component) {
     value: function load_files(cred) {
       var _this2 = this;
 
-      // console.log(this.state);
-      // console.log(has_all_cred);
-      // console.log("a", has_all_cred(this.state.cred));
       if ((0, _util.has_all_cred)(cred)) {
-        // console.log("z");
-        get_files(this.s3, "prod/").then(function (file_list) {
+        (0, _util.get_files)(this.s3, "prod/").then(function (file_list) {
           _this2.setState({
             file_list: file_list,
             show_cred: false
@@ -72441,7 +73120,7 @@ function (_React$Component) {
                 // need to make a role ... maybe
                 // https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/s3-example-photos-view.html
                 // check if they have all the creds first, TODO add back
-                this.s3 = setup_s3(this.state.cred);
+                this.s3 = (0, _util.setup_s3)(this.state.cred);
                 this.load_files(this.state.cred);
 
               case 2:
@@ -72469,8 +73148,8 @@ function (_React$Component) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
-                console.log("putSheetsDataToS3");
-                console.log(info, sheets_doc);
+                // console.log("putSheetsDataToS3");
+                // console.log(info, sheets_doc);
                 this.setState({
                   show_sf_add: false
                 });
@@ -72488,14 +73167,14 @@ function (_React$Component) {
                   sheets_key: info.sheets_key
                 };
                 body = JSON.stringify(sheets_doc);
+                _context2.next = 8;
+                return (0, _util.put_file)(this.s3, "prod/".concat(info.path, ".json"), body, meta);
+
+              case 8:
                 _context2.next = 10;
-                return put_file(this.s3, "prod/".concat(info.path, ".json"), body, meta);
+                return (0, _util.put_file)(this.s3, "archive/".concat(info.path, "_").concat(now, ".json"), body, {});
 
               case 10:
-                _context2.next = 12;
-                return put_file(this.s3, "archive/".concat(info.path, "_").concat(now, ".json"), body, {});
-
-              case 12:
                 _toaster.toaster.closeAll();
 
                 _toaster.toaster.success("Done with upload to S3!", {
@@ -72503,11 +73182,9 @@ function (_React$Component) {
                 }); // repull the list to update ui
 
 
-                this.load_files(this.state.cred); // get_files(this.s3, "prod/").then(file_list => {
-                //   this.setState({ file_list });
-                // });
+                this.load_files(this.state.cred);
 
-              case 15:
+              case 13:
               case "end":
                 return _context2.stop();
             }
@@ -72515,7 +73192,7 @@ function (_React$Component) {
         }, _callee2, this);
       }));
 
-      function putSheetsDataToS3(_x2, _x3) {
+      function putSheetsDataToS3(_x, _x2) {
         return _putSheetsDataToS.apply(this, arguments);
       }
 
@@ -72528,10 +73205,12 @@ function (_React$Component) {
       this.setState({
         cred: cred
       });
-      this.s3 = setup_s3(cred); // console.log(this.s3);
+      this.s3 = (0, _util.setup_s3)(cred);
+      this.load_files(cred); // update the url with settings if they're ok with it
 
-      this.load_files(cred); // make this optional
-      // set_cred_params(cred);
+      if (cred.update_url) {
+        (0, _util.set_cred_params)(cred);
+      }
     }
   }, {
     key: "render",
@@ -72551,7 +73230,8 @@ function (_React$Component) {
           });
         }
       }, React.createElement(_sf_add.default, {
-        onComplete: this.putSheetsDataToS3
+        onComplete: this.putSheetsDataToS3,
+        file_list: this.state.file_list
       })), React.createElement(_sideSheet.SideSheet, {
         position: _constants.Position.BOTTOM,
         isShown: this.state.show_cred,
@@ -72571,8 +73251,9 @@ function (_React$Component) {
             selected: false
           });
         }
-      }, React.createElement(SingleFile, {
+      }, React.createElement(_single_file.default, {
         s3: this.s3,
+        cred: this.state.cred,
         selected: this.state.selected,
         putSheetsDataToS3: this.putSheetsDataToS3
       })), React.createElement(_layers.Pane, {
@@ -72611,14 +73292,9 @@ function (_React$Component) {
               while (1) {
                 switch (_context3.prev = _context3.next) {
                   case 0:
-                    // console.log(path);
                     _this3.setState({
                       selected: path
-                    }); // let prod_file = await this.s3.getObject({ Key: path }).promise();
-                    // console.log(prod_file.Metadata);
-                    // console.log(prod_file);
-                    // console.log(JSON.parse(prod_file.Body.toString()));
-
+                    });
 
                   case 1:
                   case "end":
@@ -72628,7 +73304,7 @@ function (_React$Component) {
             }, _callee3);
           }));
 
-          return function (_x4) {
+          return function (_x3) {
             return _ref.apply(this, arguments);
           };
         }()
@@ -72639,307 +73315,10 @@ function (_React$Component) {
   return App;
 }(React.Component);
 
-var SingleFile =
-/*#__PURE__*/
-function (_React$Component2) {
-  _inherits(SingleFile, _React$Component2);
-
-  function SingleFile(props) {
-    var _this4;
-
-    _classCallCheck(this, SingleFile);
-
-    _this4 = _possibleConstructorReturn(this, _getPrototypeOf(SingleFile).call(this, props));
-    _this4.revertTo = _this4.revertTo.bind(_assertThisInitialized(_this4));
-    _this4.state = {
-      meta: false,
-      archive: false,
-      overview: []
-    };
-    return _this4;
-  }
-
-  _createClass(SingleFile, [{
-    key: "addUpdate",
-    value: function () {
-      var _addUpdate = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee4() {
-        var meta, sheets_key, sheets_doc, path, info;
-        return regeneratorRuntime.wrap(function _callee4$(_context4) {
-          while (1) {
-            switch (_context4.prev = _context4.next) {
-              case 0:
-                console.log(this.state); // console.log(this.state.meta.sheets_key);
-
-                meta = this.state.meta;
-                sheets_key = meta.sheets_key;
-
-                _toaster.toaster.notify("Fetching the Google Sheets Document...", {
-                  duration: 120
-                });
-
-                _context4.next = 6;
-                return (0, _get_sheetsdoc.get_sheetsdoc)(sheets_key);
-
-              case 6:
-                sheets_doc = _context4.sent;
-
-                _toaster.toaster.closeAll();
-
-                _toaster.toaster.success("Successfully Loaded Latest Sheets Data");
-
-                path = this.props.selected.split(".json")[0].replace("prod/", "");
-                info = {
-                  name: meta.name,
-                  sheets_key: sheets_key,
-                  path: path
-                };
-                _context4.next = 13;
-                return this.props.putSheetsDataToS3(info, sheets_doc);
-
-              case 13:
-                _context4.next = 15;
-                return this.loadFileAndArchives();
-
-              case 15:
-              case "end":
-                return _context4.stop();
-            }
-          }
-        }, _callee4, this);
-      }));
-
-      function addUpdate() {
-        return _addUpdate.apply(this, arguments);
-      }
-
-      return addUpdate;
-    }()
-  }, {
-    key: "revertTo",
-    value: function () {
-      var _revertTo = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee5(path_of_archive) {
-        var ts, _this$state$meta, sheets_key, name, archive_file, meta;
-
-        return regeneratorRuntime.wrap(function _callee5$(_context5) {
-          while (1) {
-            switch (_context5.prev = _context5.next) {
-              case 0:
-                _toaster.toaster.notify("Reverting", {
-                  duration: 120
-                });
-
-                ts = /(\d+).json/g.exec(path_of_archive)[1];
-                _this$state$meta = this.state.meta, sheets_key = _this$state$meta.sheets_key, name = _this$state$meta.name;
-                _context5.next = 5;
-                return this.props.s3.getObject({
-                  Key: path_of_archive
-                }).promise();
-
-              case 5:
-                archive_file = _context5.sent;
-                meta = {
-                  name: name,
-                  from: ts,
-                  sheets_key: sheets_key
-                };
-                _context5.next = 9;
-                return put_file(this.props.s3, this.props.selected, archive_file.Body.toString(), meta);
-
-              case 9:
-                _context5.next = 11;
-                return this.loadFileAndArchives();
-
-              case 11:
-                _toaster.toaster.closeAll();
-
-                _toaster.toaster.success("Successfully Reverted");
-
-              case 13:
-              case "end":
-                return _context5.stop();
-            }
-          }
-        }, _callee5, this);
-      }));
-
-      function revertTo(_x5) {
-        return _revertTo.apply(this, arguments);
-      }
-
-      return revertTo;
-    }()
-  }, {
-    key: "componentDidMount",
-    value: function () {
-      var _componentDidMount2 = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee6() {
-        return regeneratorRuntime.wrap(function _callee6$(_context6) {
-          while (1) {
-            switch (_context6.prev = _context6.next) {
-              case 0:
-                _context6.next = 2;
-                return this.loadFileAndArchives();
-
-              case 2:
-              case "end":
-                return _context6.stop();
-            }
-          }
-        }, _callee6, this);
-      }));
-
-      function componentDidMount() {
-        return _componentDidMount2.apply(this, arguments);
-      }
-
-      return componentDidMount;
-    }()
-  }, {
-    key: "loadFileAndArchives",
-    value: function () {
-      var _loadFileAndArchives = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee7() {
-        var prod_file, meta, search_path, archive, file_data_obj, overview;
-        return regeneratorRuntime.wrap(function _callee7$(_context7) {
-          while (1) {
-            switch (_context7.prev = _context7.next) {
-              case 0:
-                _context7.next = 2;
-                return this.props.s3.getObject({
-                  Key: this.props.selected
-                }).promise();
-
-              case 2:
-                prod_file = _context7.sent;
-                meta = prod_file.Metadata; // console.log("meta", meta);
-                // this.setState({ meta });
-
-                search_path = this.props.selected.replace(".json", "").replace("prod/", "archive/"); // console.log("search_path:");
-                // console.log(search_path);
-
-                _context7.next = 7;
-                return this.props.s3.listObjects({
-                  Delimiter: "",
-                  Prefix: search_path
-                }).promise().catch(function (e) {
-                  return console.log("err", e);
-                });
-
-              case 7:
-                archive = _context7.sent;
-                archive = archive.Contents;
-                file_data_obj = JSON.parse(prod_file.Body.toString());
-                overview = Object.keys(file_data_obj).map(function (table_name) {
-                  var rows = file_data_obj[table_name].length;
-                  return {
-                    table_name: table_name,
-                    rows: rows
-                  };
-                });
-                this.setState({
-                  meta: meta,
-                  archive: archive,
-                  overview: overview
-                }); // console.log(archive);
-                // meta['']
-                // console.log(prod_file.Metadata);
-                // console.log(prod_file);
-
-              case 12:
-              case "end":
-                return _context7.stop();
-            }
-          }
-        }, _callee7, this);
-      }));
-
-      function loadFileAndArchives() {
-        return _loadFileAndArchives.apply(this, arguments);
-      }
-
-      return loadFileAndArchives;
-    }()
-  }, {
-    key: "render",
-    value: function render() {
-      var _this5 = this;
-
-      return React.createElement(_layers.Pane, {
-        padding: 8,
-        margin: 8
-      }, React.createElement(_typography.Heading, {
-        size: 700,
-        marginY: 16
-      }, this.state.meta ? this.state.meta.name : ""), React.createElement(_typography.Heading, {
-        marginY: 16
-      }, this.props.selected), React.createElement(_Buttons.Button, {
-        appearance: "primary",
-        width: "100%",
-        height: 40,
-        iconBefore: "cloud-upload",
-        marginBottom: 32,
-        onClick: function onClick() {
-          return _this5.addUpdate();
-        }
-      }, "Get Google Sheets Data and Upload New Version to S3"), React.createElement(_typography.Heading, {
-        marginY: 16
-      }, "Archives"), !this.state.archive ? "" : this.state.archive.map(function (obj, i) {
-        // console.log(obj.Key);
-        // console.log(obj.state.meta);
-        // console.log(`${this.state.meta.from}.json`);
-        var is_active = obj.Key.endsWith("_".concat(_this5.state.meta.from, ".json"));
-        return React.createElement(_layers.Pane, {
-          key: i,
-          background: "tint2",
-          marginY: 8,
-          padding: 8,
-          display: "flex",
-          justifyContent: "space-between"
-        }, React.createElement(_typography.Text, null, " ", is_active ? "✅" : "⏹", " ", to_human_date(obj.LastModified)), !is_active ? React.createElement(_Buttons.Button, {
-          iconBefore: "undo",
-          onClick: function onClick() {
-            return _this5.revertTo(obj.Key);
-          }
-        }, "Revert To This Version") : React.createElement(_badges.Badge, {
-          color: "green"
-        }, "Active"));
-      }), React.createElement(_layers.Pane, {
-        margin: 16,
-        padding: 16,
-        background: "tint1"
-      }, React.createElement(_typography.Heading, {
-        marginBottom: 16
-      }, "Overview of Active File"), this.state.overview.map(function (_ref2) {
-        var table_name = _ref2.table_name,
-            rows = _ref2.rows;
-        return React.createElement(_layers.Pane, {
-          key: table_name,
-          display: "flex",
-          justifyContent: "space-between",
-          borderBottom: true,
-          marginBottom: 2
-        }, React.createElement(_typography.Code, null, table_name), React.createElement(_typography.Text, null, rows, " rows"));
-      })));
-    }
-  }]);
-
-  return SingleFile;
-}(React.Component);
-
-function to_human_date(date) {
-  return "".concat(date.toDateString(), " at ").concat(date.toLocaleTimeString());
-}
-
 var ExistingEntries =
 /*#__PURE__*/
-function (_React$Component3) {
-  _inherits(ExistingEntries, _React$Component3);
+function (_React$Component2) {
+  _inherits(ExistingEntries, _React$Component2);
 
   function ExistingEntries() {
     _classCallCheck(this, ExistingEntries);
@@ -72950,12 +73329,12 @@ function (_React$Component3) {
   _createClass(ExistingEntries, [{
     key: "render",
     value: function render() {
-      var _this6 = this;
+      var _this4 = this;
 
       var file_list = this.props.file_list;
       var list_entries = !file_list ? "" : file_list.map(function (entry) {
         var human_path = entry.Key.split(".json")[0].replace("prod/", "");
-        var modified = to_human_date(entry.LastModified);
+        var modified = (0, _util.to_human_date)(entry.LastModified);
         return React.createElement(_layers.Pane, {
           key: human_path,
           marginY: 8,
@@ -72964,17 +73343,17 @@ function (_React$Component3) {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center"
-        }, React.createElement(_typography.Heading, {
-          size: 500
-        }, human_path), React.createElement(_typography.Text, {
+        }, React.createElement(_typography.Text, {
           size: 300
-        }, "Last Modified: ", modified), React.createElement(_Buttons.Button, {
+        }, modified), React.createElement(_typography.Heading, {
+          size: 500
+        }, human_path), React.createElement(_Buttons.Button, {
           iconBefore: "edit",
           appearance: "primary",
           intent: "success",
           height: 36,
           onClick: function onClick() {
-            return _this6.props.onEditClick(entry.Key);
+            return _this4.props.onEditClick(entry.Key);
           }
         }, "Edit/Update"));
       });
@@ -72993,14 +73372,23 @@ function (_React$Component3) {
   }]);
 
   return ExistingEntries;
-}(React.Component);
+}(React.Component); // XXX this is what actually starts it, as we can't do much until it's
+
 
 gapi.load("client", function () {
   // console.log("l");
   var mountNode = document.getElementById("app");
   ReactDOM.render(React.createElement(App, null), mountNode);
-});
-},{"regenerator-runtime/runtime":"../node_modules/regenerator-runtime/runtime.js","evergreen-ui/esm/layers":"../node_modules/evergreen-ui/esm/layers/index.js","evergreen-ui/esm/side-sheet":"../node_modules/evergreen-ui/esm/side-sheet/index.js","evergreen-ui/esm/typography":"../node_modules/evergreen-ui/esm/typography/index.js","evergreen-ui/esm/Buttons":"../node_modules/evergreen-ui/esm/Buttons/index.js","evergreen-ui/esm/text-input":"../node_modules/evergreen-ui/esm/text-input/index.js","evergreen-ui/esm/table":"../node_modules/evergreen-ui/esm/table/index.js","evergreen-ui/esm/menu":"../node_modules/evergreen-ui/esm/menu/index.js","evergreen-ui/esm/toaster":"../node_modules/evergreen-ui/esm/toaster/index.js","evergreen-ui/esm/spinner":"../node_modules/evergreen-ui/esm/spinner/index.js","evergreen-ui/esm/constants":"../node_modules/evergreen-ui/esm/constants/index.js","evergreen-ui/esm/badges":"../node_modules/evergreen-ui/esm/badges/index.js","react-enroute":"../node_modules/react-enroute/build/index.js","./util":"util.js","./sf_add":"sf_add.js","./cred_edit":"cred_edit.js","./get_sheetsdoc":"get_sheetsdoc.js"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+}); // -------------------------------------
+// -------------------------------------
+// just for dev and testing !
+// import { test_get_sheetsdoc } from "./get_sheetsdoc";
+// JUST FOR DEV
+// need to load gapi first
+// gapi.load("client", () => {
+//   test_get_sheetsdoc();
+// });
+},{"regenerator-runtime/runtime":"../node_modules/regenerator-runtime/runtime.js","evergreen-ui/esm/layers":"../node_modules/evergreen-ui/esm/layers/index.js","evergreen-ui/esm/side-sheet":"../node_modules/evergreen-ui/esm/side-sheet/index.js","evergreen-ui/esm/typography":"../node_modules/evergreen-ui/esm/typography/index.js","evergreen-ui/esm/Buttons":"../node_modules/evergreen-ui/esm/Buttons/index.js","evergreen-ui/esm/text-input":"../node_modules/evergreen-ui/esm/text-input/index.js","evergreen-ui/esm/table":"../node_modules/evergreen-ui/esm/table/index.js","evergreen-ui/esm/menu":"../node_modules/evergreen-ui/esm/menu/index.js","evergreen-ui/esm/toaster":"../node_modules/evergreen-ui/esm/toaster/index.js","evergreen-ui/esm/spinner":"../node_modules/evergreen-ui/esm/spinner/index.js","evergreen-ui/esm/constants":"../node_modules/evergreen-ui/esm/constants/index.js","evergreen-ui/esm/badges":"../node_modules/evergreen-ui/esm/badges/index.js","react-enroute":"../node_modules/react-enroute/build/index.js","./util":"util.js","./sf_add":"sf_add.js","./cred_edit":"cred_edit.js","./single_file":"single_file.js","./get_sheetsdoc":"get_sheetsdoc.js"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -73028,7 +73416,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "63241" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49849" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
