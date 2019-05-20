@@ -1,6 +1,7 @@
 import { Pane } from "evergreen-ui/esm/layers";
 import { SideSheet } from "evergreen-ui/esm/side-sheet";
-import { Paragraph, Text, Link, Heading } from "evergreen-ui/esm/typography";
+// prettier-ignore
+import { Paragraph, Text, Code, Heading, Link } from "evergreen-ui/esm/typography";
 import { Button } from "evergreen-ui/esm/Buttons";
 import { TextInput, TextInputField } from "evergreen-ui/esm/text-input";
 // prettier-ignore
@@ -34,7 +35,28 @@ export default class CredEdit extends React.Component {
         padding={32}
         margin={16}
       >
-        <Heading size={600} marginBottom={8} textAlign="center" />
+        {/*<Pane fontFamily="Patua One" fontSize={60} textAlign="center">*/}
+        <Pane fontSize={60} textAlign="center">
+          <Code fontSize={28}>⛈ Sheets Storm 📊</Code>
+        </Pane>
+        <Pane padding={10} marginBottom={24}>
+          <Paragraph maxWidth={600} marginX="auto" marginBottom={8}>
+            Sheets Storm is a web application built to turn Google Spreadsheets
+            into JSON deployed on AWS S3 with the click of a button (and revert
+            back if someone makes a mistake!)
+          </Paragraph>
+
+          <Paragraph maxWidth={600} marginX="auto">
+            Enter your info below, or visit the{" "}
+            <Link href="https://github.com/zischwartz/sheetsstorm">
+              documentation & source repo
+            </Link>
+            .
+          </Paragraph>
+        </Pane>
+        <Heading size={500} marginBottom={8} textAlign="center">
+          {this.props.cred.key_id ? "Edit" : "Add"} Config/Credentials
+        </Heading>
         <TextInputField
           placeholder="Your Access Key ID"
           label="AWS Access Key ID"

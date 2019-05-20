@@ -25,6 +25,7 @@ import { asyncForEach, get_cred_params,  set_cred_params,  has_all_cred,  setup_
 import SheetsFileAdd from "./sf_add";
 import CredEdit from "./cred_edit";
 import SingleFile from "./single_file";
+import ExistingEntries from "./existing";
 import { get_sheetsdoc } from "./get_sheetsdoc";
 
 class App extends React.Component {
@@ -57,7 +58,6 @@ class App extends React.Component {
     // need to make a role ... maybe
     // https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/s3-example-photos-view.html
 
-    // check if they have all the creds first, TODO add back
     this.s3 = setup_s3(this.state.cred);
     this.load_files(this.state.cred);
   }
@@ -126,9 +126,8 @@ class App extends React.Component {
           </SideSheet>
         )}
 
-        {/* TODO another sidesheet to edit and update them */}
-        <Pane fontFamily="Patua One" fontSize={60} textAlign="center">
-          ⛈ SheetsStorm
+        <Pane textAlign="center">
+          <Code>⛈ Sheets Storm 📊</Code>
         </Pane>
         <Button
           appearance="primary"
@@ -159,69 +158,11 @@ class App extends React.Component {
   }
 }
 
-class ExistingEntries extends React.Component {
-  render() {
-    let { file_list } = this.props;
-
-    let list_entries = !file_list
-      ? ``
-      : file_list.map(entry => {
-          let human_path = entry.Key.split(".json")[0].replace("prod/", "");
-          let modified = to_human_date(entry.LastModified);
-          return (
-            <Pane
-              key={human_path}
-              marginY={8}
-              padding={8}
-              background="tint1"
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-            >
-              <Text size={300}>{modified}</Text>
-
-              <Heading size={500}>{human_path}</Heading>
-              <Button
-                iconBefore="edit"
-                appearance="primary"
-                intent="success"
-                height={36}
-                onClick={() => this.props.onEditClick(entry.Key)}
-              >
-                Edit/Update
-              </Button>
-            </Pane>
-          );
-        });
-    return (
-      <Pane padding={16} border marginTop={16} elevation={0}>
-        <Heading marginBottom={16}>Your Files</Heading>
-        {!file_list ? <Spinner marginX="auto" marginY={32} /> : ``}
-        {file_list && file_list.length == 0 ? (
-          <Text> No Files Yet. Add one above!</Text>
-        ) : (
-          ``
-        )}
-        {list_entries}
-      </Pane>
-    );
-  }
-}
-
+// *****************************************************************************
 // XXX this is what actually starts it, as we can't do much until it's
-
+// *****************************************************************************
 gapi.load("client", () => {
   // console.log("l");
   var mountNode = document.getElementById("app");
   ReactDOM.render(<App />, mountNode);
 });
-
-// -------------------------------------
-// -------------------------------------
-// just for dev and testing !
-// import { test_get_sheetsdoc } from "./get_sheetsdoc";
-// JUST FOR DEV
-// need to load gapi first
-// gapi.load("client", () => {
-//   test_get_sheetsdoc();
-// });

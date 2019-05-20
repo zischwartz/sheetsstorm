@@ -34,7 +34,6 @@ export function has_all_cred(cred) {
     cred["bucket"].length &&
     cred["key_id"].length &&
     cred["secret_access_key"].length
-    // cred["region"].length
   );
 }
 

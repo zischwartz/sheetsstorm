@@ -52,6 +52,8 @@ fixture["Leader's List 2019 vs 2017"] =
 delete fixture["Leader\\x27s List 2019 vs 2017"];
 // usefull http://jsondiff.com/
 
+// Note, this make shift test only gets 7/11 of the tables for the test document,
+// which seems to be character encoding issues (as in the fixture key above), exacerbated by a complicated test case
 export async function test_get_sheetsdoc() {
   console.log("running transform test");
   console.log(" against fixture:");
@@ -91,13 +93,11 @@ export async function test_get_sheetsdoc() {
   }
 
   console.log(`Score: ${score} (/${keys.length})`);
-
-  // let all_match = JSON.stringify(fixture) === JSON.stringify(result);
-  //
-  // if (all_match) {
-  //   console.log("✅ THEY ALLLLLLLL MATCH");
-  // } else {
-  //   console.log("NOt allll :-) MATCH");
-  // }
-  // console.log(result);
 }
+
+// JUST FOR DEV
+// uncomment this to run the test above
+// need to load gapi first
+// gapi.load("client", () => {
+//   test_get_sheetsdoc();
+// });
