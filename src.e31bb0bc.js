@@ -72642,13 +72642,63 @@ function (_React$Component) {
 }(React.Component);
 
 exports.default = CredEdit;
-},{"evergreen-ui/esm/layers":"../node_modules/evergreen-ui/esm/layers/index.js","evergreen-ui/esm/side-sheet":"../node_modules/evergreen-ui/esm/side-sheet/index.js","evergreen-ui/esm/typography":"../node_modules/evergreen-ui/esm/typography/index.js","evergreen-ui/esm/Buttons":"../node_modules/evergreen-ui/esm/Buttons/index.js","evergreen-ui/esm/text-input":"../node_modules/evergreen-ui/esm/text-input/index.js","evergreen-ui/esm/menu":"../node_modules/evergreen-ui/esm/menu/index.js","evergreen-ui/esm/toaster":"../node_modules/evergreen-ui/esm/toaster/index.js","evergreen-ui/esm/checkbox":"../node_modules/evergreen-ui/esm/checkbox/index.js","./get_sheetsdoc":"get_sheetsdoc.js"}],"single_file.js":[function(require,module,exports) {
+},{"evergreen-ui/esm/layers":"../node_modules/evergreen-ui/esm/layers/index.js","evergreen-ui/esm/side-sheet":"../node_modules/evergreen-ui/esm/side-sheet/index.js","evergreen-ui/esm/typography":"../node_modules/evergreen-ui/esm/typography/index.js","evergreen-ui/esm/Buttons":"../node_modules/evergreen-ui/esm/Buttons/index.js","evergreen-ui/esm/text-input":"../node_modules/evergreen-ui/esm/text-input/index.js","evergreen-ui/esm/menu":"../node_modules/evergreen-ui/esm/menu/index.js","evergreen-ui/esm/toaster":"../node_modules/evergreen-ui/esm/toaster/index.js","evergreen-ui/esm/checkbox":"../node_modules/evergreen-ui/esm/checkbox/index.js","./get_sheetsdoc":"get_sheetsdoc.js"}],"../node_modules/clipboard-copy/index.js":[function(require,module,exports) {
+module.exports = clipboardCopy
+
+function clipboardCopy (text) {
+  // Use the Async Clipboard API when available. Requires a secure browing
+  // context (i.e. HTTPS)
+  if (navigator.clipboard) {
+    return navigator.clipboard.writeText(text)
+  }
+
+  // ...Otherwise, use document.execCommand() fallback
+
+  // Put the text to copy into a <span>
+  var span = document.createElement('span')
+  span.textContent = text
+
+  // Preserve consecutive spaces and newlines
+  span.style.whiteSpace = 'pre'
+
+  // Add the <span> to the page
+  document.body.appendChild(span)
+
+  // Make a selection object representing the range of text selected by the user
+  var selection = window.getSelection()
+  var range = window.document.createRange()
+  selection.removeAllRanges()
+  range.selectNode(span)
+  selection.addRange(range)
+
+  // Copy text to the clipboard
+  var success = false
+  try {
+    success = window.document.execCommand('copy')
+  } catch (err) {
+    console.log('error', err)
+  }
+
+  // Cleanup
+  selection.removeAllRanges()
+  window.document.body.removeChild(span)
+
+  // The Async Clipboard API returns a promise that may reject with `undefined`
+  // so we match that here for consistency.
+  return success
+    ? Promise.resolve()
+    : Promise.reject() // eslint-disable-line prefer-promise-reject-errors
+}
+
+},{}],"single_file.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
+
+var _clipboardCopy = _interopRequireDefault(require("clipboard-copy"));
 
 var _layers = require("evergreen-ui/esm/layers");
 
@@ -72669,6 +72719,8 @@ var _constants = require("evergreen-ui/esm/constants");
 var _badges = require("evergreen-ui/esm/badges");
 
 var _util = require("./util");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
@@ -72943,11 +72995,31 @@ function (_React$Component) {
       }, React.createElement(_typography.Heading, {
         size: 700,
         marginY: 16
-      }, this.state.meta ? this.state.meta.name : ""), React.createElement(_typography.Heading, {
+      }, this.state.meta ? this.state.meta.name : React.createElement(_spinner.Spinner, null)), React.createElement(_typography.Heading, {
         marginY: 16
-      }, this.props.selected.slice(5).slice(0, -5)), React.createElement(_typography.Paragraph, null, React.createElement(_typography.Link, {
-        href: full_path
-      }, full_path)), React.createElement(_Buttons.Button, {
+      }, React.createElement(_typography.Link, {
+        href: full_path,
+        target: "_blank"
+      }, this.props.selected.slice(5).slice(0, -5))), React.createElement(_layers.Pane, {
+        display: "flex",
+        marginBottom: 16,
+        width: "100%",
+        flexDirection: "row",
+        alignItems: "stretch"
+      }, React.createElement(_textInput.TextInput, {
+        value: full_path,
+        readOnly: true,
+        disabled: true,
+        flex: "1",
+        cursor: "text !important"
+      }), React.createElement(_Buttons.Button, {
+        iconBefore: "duplicate",
+        onClick: function onClick() {
+          (0, _clipboardCopy.default)(full_path);
+
+          _toaster.toaster.success("Copied URL");
+        }
+      }, "Copy URL")), React.createElement(_Buttons.Button, {
         appearance: "primary",
         width: "100%",
         height: 40,
@@ -72958,7 +73030,7 @@ function (_React$Component) {
         }
       }, "Get Google Sheets Data and Upload New Version to S3"), React.createElement(_typography.Heading, {
         marginY: 16
-      }, "Archives"), !this.state.archive ? "" : this.state.archive.map(function (obj, i) {
+      }, "Archives"), !this.state.archive ? React.createElement(_spinner.Spinner, null) : this.state.archive.map(function (obj, i) {
         var is_active = obj.Key.endsWith("_".concat(_this2.state.meta.from, ".json"));
         return React.createElement(_layers.Pane, {
           key: i,
@@ -72999,7 +73071,7 @@ function (_React$Component) {
 }(React.Component);
 
 exports.default = SingleFile;
-},{"evergreen-ui/esm/layers":"../node_modules/evergreen-ui/esm/layers/index.js","evergreen-ui/esm/typography":"../node_modules/evergreen-ui/esm/typography/index.js","evergreen-ui/esm/Buttons":"../node_modules/evergreen-ui/esm/Buttons/index.js","evergreen-ui/esm/text-input":"../node_modules/evergreen-ui/esm/text-input/index.js","evergreen-ui/esm/menu":"../node_modules/evergreen-ui/esm/menu/index.js","evergreen-ui/esm/toaster":"../node_modules/evergreen-ui/esm/toaster/index.js","evergreen-ui/esm/spinner":"../node_modules/evergreen-ui/esm/spinner/index.js","evergreen-ui/esm/constants":"../node_modules/evergreen-ui/esm/constants/index.js","evergreen-ui/esm/badges":"../node_modules/evergreen-ui/esm/badges/index.js","./util":"util.js"}],"index.js":[function(require,module,exports) {
+},{"clipboard-copy":"../node_modules/clipboard-copy/index.js","evergreen-ui/esm/layers":"../node_modules/evergreen-ui/esm/layers/index.js","evergreen-ui/esm/typography":"../node_modules/evergreen-ui/esm/typography/index.js","evergreen-ui/esm/Buttons":"../node_modules/evergreen-ui/esm/Buttons/index.js","evergreen-ui/esm/text-input":"../node_modules/evergreen-ui/esm/text-input/index.js","evergreen-ui/esm/menu":"../node_modules/evergreen-ui/esm/menu/index.js","evergreen-ui/esm/toaster":"../node_modules/evergreen-ui/esm/toaster/index.js","evergreen-ui/esm/spinner":"../node_modules/evergreen-ui/esm/spinner/index.js","evergreen-ui/esm/constants":"../node_modules/evergreen-ui/esm/constants/index.js","evergreen-ui/esm/badges":"../node_modules/evergreen-ui/esm/badges/index.js","./util":"util.js"}],"index.js":[function(require,module,exports) {
 "use strict";
 
 require("regenerator-runtime/runtime");
@@ -73416,7 +73488,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49849" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50342" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
