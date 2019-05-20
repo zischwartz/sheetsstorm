@@ -58254,8 +58254,7 @@ function set_cred_params(cred) {
 }
 
 function has_all_cred(cred) {
-  return cred["bucket"].length && cred["key_id"].length && cred["secret_access_key"].length // cred["region"].length
-  ;
+  return cred["bucket"].length && cred["key_id"].length && cred["secret_access_key"].length;
 } // AWS S3 helpers
 
 
@@ -71893,10 +71892,18 @@ function objectify(values_arr) {
 // hacky fix for the encoding issue
 _raai_index_.default["Leader's List 2019 vs 2017"] = _raai_index_.default["Leader\\x27s List 2019 vs 2017"];
 delete _raai_index_.default["Leader\\x27s List 2019 vs 2017"]; // usefull http://jsondiff.com/
+// Note, this make shift test only gets 7/11 of the tables for the test document,
+// which seems to be character encoding issues (as in the fixture key above), exacerbated by a complicated test case
 
 function test_get_sheetsdoc() {
   return _test_get_sheetsdoc.apply(this, arguments);
-}
+} // JUST FOR DEV
+// uncomment this to run the test above
+// need to load gapi first
+// gapi.load("client", () => {
+//   test_get_sheetsdoc();
+// });
+
 
 function _test_get_sheetsdoc() {
   _test_get_sheetsdoc = _asyncToGenerator(
@@ -71948,14 +71955,7 @@ function _test_get_sheetsdoc() {
               console.log(" ");
             }
 
-            console.log("Score: ".concat(score, " (/").concat(keys.length, ")")); // let all_match = JSON.stringify(fixture) === JSON.stringify(result);
-            //
-            // if (all_match) {
-            //   console.log("✅ THEY ALLLLLLLL MATCH");
-            // } else {
-            //   console.log("NOt allll :-) MATCH");
-            // }
-            // console.log(result);
+            console.log("Score: ".concat(score, " (/").concat(keys.length, ")"));
 
           case 11:
           case "end":
@@ -72575,11 +72575,28 @@ function (_React$Component) {
         border: true,
         padding: 32,
         margin: 16
-      }, React.createElement(_typography.Heading, {
-        size: 600,
+      }, React.createElement(_layers.Pane, {
+        fontSize: 60,
+        textAlign: "center"
+      }, React.createElement(_typography.Code, {
+        fontSize: 28
+      }, "\u26C8 Sheets Storm \uD83D\uDCCA")), React.createElement(_layers.Pane, {
+        padding: 10,
+        marginBottom: 24
+      }, React.createElement(_typography.Paragraph, {
+        maxWidth: 600,
+        marginX: "auto",
+        marginBottom: 8
+      }, "Sheets Storm is a web application built to turn Google Spreadsheets into JSON deployed on AWS S3 with the click of a button (and revert back if someone makes a mistake!)"), React.createElement(_typography.Paragraph, {
+        maxWidth: 600,
+        marginX: "auto"
+      }, "Enter your info below, or visit the", " ", React.createElement(_typography.Link, {
+        href: "https://github.com/zischwartz/sheetsstorm"
+      }, "documentation & source repo"), ".")), React.createElement(_typography.Heading, {
+        size: 500,
         marginBottom: 8,
         textAlign: "center"
-      }), React.createElement(_textInput.TextInputField, {
+      }, this.props.cred.key_id ? "Edit" : "Add", " Config/Credentials"), React.createElement(_textInput.TextInputField, {
         placeholder: "Your Access Key ID",
         label: "AWS Access Key ID",
         onKeyPress: on_enter,
@@ -73071,7 +73088,119 @@ function (_React$Component) {
 }(React.Component);
 
 exports.default = SingleFile;
-},{"clipboard-copy":"../node_modules/clipboard-copy/index.js","evergreen-ui/esm/layers":"../node_modules/evergreen-ui/esm/layers/index.js","evergreen-ui/esm/typography":"../node_modules/evergreen-ui/esm/typography/index.js","evergreen-ui/esm/Buttons":"../node_modules/evergreen-ui/esm/Buttons/index.js","evergreen-ui/esm/text-input":"../node_modules/evergreen-ui/esm/text-input/index.js","evergreen-ui/esm/menu":"../node_modules/evergreen-ui/esm/menu/index.js","evergreen-ui/esm/toaster":"../node_modules/evergreen-ui/esm/toaster/index.js","evergreen-ui/esm/spinner":"../node_modules/evergreen-ui/esm/spinner/index.js","evergreen-ui/esm/constants":"../node_modules/evergreen-ui/esm/constants/index.js","evergreen-ui/esm/badges":"../node_modules/evergreen-ui/esm/badges/index.js","./util":"util.js"}],"index.js":[function(require,module,exports) {
+},{"clipboard-copy":"../node_modules/clipboard-copy/index.js","evergreen-ui/esm/layers":"../node_modules/evergreen-ui/esm/layers/index.js","evergreen-ui/esm/typography":"../node_modules/evergreen-ui/esm/typography/index.js","evergreen-ui/esm/Buttons":"../node_modules/evergreen-ui/esm/Buttons/index.js","evergreen-ui/esm/text-input":"../node_modules/evergreen-ui/esm/text-input/index.js","evergreen-ui/esm/menu":"../node_modules/evergreen-ui/esm/menu/index.js","evergreen-ui/esm/toaster":"../node_modules/evergreen-ui/esm/toaster/index.js","evergreen-ui/esm/spinner":"../node_modules/evergreen-ui/esm/spinner/index.js","evergreen-ui/esm/constants":"../node_modules/evergreen-ui/esm/constants/index.js","evergreen-ui/esm/badges":"../node_modules/evergreen-ui/esm/badges/index.js","./util":"util.js"}],"existing.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _layers = require("evergreen-ui/esm/layers");
+
+var _sideSheet = require("evergreen-ui/esm/side-sheet");
+
+var _typography = require("evergreen-ui/esm/typography");
+
+var _Buttons = require("evergreen-ui/esm/Buttons");
+
+var _textInput = require("evergreen-ui/esm/text-input");
+
+var _table = require("evergreen-ui/esm/table");
+
+var _menu = require("evergreen-ui/esm/menu");
+
+var _toaster = require("evergreen-ui/esm/toaster");
+
+var _spinner = require("evergreen-ui/esm/spinner");
+
+var _constants = require("evergreen-ui/esm/constants");
+
+var _badges = require("evergreen-ui/esm/badges");
+
+var _reactEnroute = require("react-enroute");
+
+var _util = require("./util");
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+var ExistingEntries =
+/*#__PURE__*/
+function (_React$Component) {
+  _inherits(ExistingEntries, _React$Component);
+
+  function ExistingEntries() {
+    _classCallCheck(this, ExistingEntries);
+
+    return _possibleConstructorReturn(this, _getPrototypeOf(ExistingEntries).apply(this, arguments));
+  }
+
+  _createClass(ExistingEntries, [{
+    key: "render",
+    value: function render() {
+      var _this = this;
+
+      var file_list = this.props.file_list;
+      var list_entries = !file_list ? "" : file_list.map(function (entry) {
+        var human_path = entry.Key.split(".json")[0].replace("prod/", "");
+        var modified = (0, _util.to_human_date)(entry.LastModified);
+        return React.createElement(_layers.Pane, {
+          key: human_path,
+          marginY: 8,
+          padding: 8,
+          background: "tint1",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
+        }, React.createElement(_typography.Text, {
+          size: 300
+        }, modified), React.createElement(_typography.Heading, {
+          size: 500
+        }, human_path), React.createElement(_Buttons.Button, {
+          iconBefore: "edit",
+          appearance: "primary",
+          intent: "success",
+          height: 36,
+          onClick: function onClick() {
+            return _this.props.onEditClick(entry.Key);
+          }
+        }, "Edit/Update"));
+      });
+      return React.createElement(_layers.Pane, {
+        padding: 16,
+        border: true,
+        marginTop: 16,
+        elevation: 0
+      }, React.createElement(_typography.Heading, {
+        marginBottom: 16
+      }, "Your Files"), !file_list ? React.createElement(_spinner.Spinner, {
+        marginX: "auto",
+        marginY: 32
+      }) : "", file_list && file_list.length == 0 ? React.createElement(_typography.Text, null, " No Files Yet. Add one above!") : "", list_entries);
+    }
+  }]);
+
+  return ExistingEntries;
+}(React.Component);
+
+exports.default = ExistingEntries;
+},{"evergreen-ui/esm/layers":"../node_modules/evergreen-ui/esm/layers/index.js","evergreen-ui/esm/side-sheet":"../node_modules/evergreen-ui/esm/side-sheet/index.js","evergreen-ui/esm/typography":"../node_modules/evergreen-ui/esm/typography/index.js","evergreen-ui/esm/Buttons":"../node_modules/evergreen-ui/esm/Buttons/index.js","evergreen-ui/esm/text-input":"../node_modules/evergreen-ui/esm/text-input/index.js","evergreen-ui/esm/table":"../node_modules/evergreen-ui/esm/table/index.js","evergreen-ui/esm/menu":"../node_modules/evergreen-ui/esm/menu/index.js","evergreen-ui/esm/toaster":"../node_modules/evergreen-ui/esm/toaster/index.js","evergreen-ui/esm/spinner":"../node_modules/evergreen-ui/esm/spinner/index.js","evergreen-ui/esm/constants":"../node_modules/evergreen-ui/esm/constants/index.js","evergreen-ui/esm/badges":"../node_modules/evergreen-ui/esm/badges/index.js","react-enroute":"../node_modules/react-enroute/build/index.js","./util":"util.js"}],"index.js":[function(require,module,exports) {
 "use strict";
 
 require("regenerator-runtime/runtime");
@@ -73107,6 +73236,8 @@ var _sf_add = _interopRequireDefault(require("./sf_add"));
 var _cred_edit = _interopRequireDefault(require("./cred_edit"));
 
 var _single_file = _interopRequireDefault(require("./single_file"));
+
+var _existing = _interopRequireDefault(require("./existing"));
 
 var _get_sheetsdoc = require("./get_sheetsdoc");
 
@@ -73191,7 +73322,6 @@ function (_React$Component) {
               case 0:
                 // need to make a role ... maybe
                 // https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/s3-example-photos-view.html
-                // check if they have all the creds first, TODO add back
                 this.s3 = (0, _util.setup_s3)(this.state.cred);
                 this.load_files(this.state.cred);
 
@@ -73329,10 +73459,8 @@ function (_React$Component) {
         selected: this.state.selected,
         putSheetsDataToS3: this.putSheetsDataToS3
       })), React.createElement(_layers.Pane, {
-        fontFamily: "Patua One",
-        fontSize: 60,
         textAlign: "center"
-      }, "\u26C8 SheetsStorm"), React.createElement(_Buttons.Button, {
+      }, React.createElement(_typography.Code, null, "\u26C8 Sheets Storm \uD83D\uDCCA")), React.createElement(_Buttons.Button, {
         appearance: "primary",
         iconBefore: "plus",
         height: "44",
@@ -73352,7 +73480,7 @@ function (_React$Component) {
             show_cred: true
           });
         }
-      }, full_cred_flag ? "Edit" : "Add", " AWS Credentials & Bucket"), React.createElement(ExistingEntries, {
+      }, full_cred_flag ? "Edit" : "Add", " AWS Credentials & Bucket"), React.createElement(_existing.default, {
         file_list: this.state.file_list,
         onEditClick:
         /*#__PURE__*/
@@ -73385,82 +73513,17 @@ function (_React$Component) {
   }]);
 
   return App;
-}(React.Component);
-
-var ExistingEntries =
-/*#__PURE__*/
-function (_React$Component2) {
-  _inherits(ExistingEntries, _React$Component2);
-
-  function ExistingEntries() {
-    _classCallCheck(this, ExistingEntries);
-
-    return _possibleConstructorReturn(this, _getPrototypeOf(ExistingEntries).apply(this, arguments));
-  }
-
-  _createClass(ExistingEntries, [{
-    key: "render",
-    value: function render() {
-      var _this4 = this;
-
-      var file_list = this.props.file_list;
-      var list_entries = !file_list ? "" : file_list.map(function (entry) {
-        var human_path = entry.Key.split(".json")[0].replace("prod/", "");
-        var modified = (0, _util.to_human_date)(entry.LastModified);
-        return React.createElement(_layers.Pane, {
-          key: human_path,
-          marginY: 8,
-          padding: 8,
-          background: "tint1",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center"
-        }, React.createElement(_typography.Text, {
-          size: 300
-        }, modified), React.createElement(_typography.Heading, {
-          size: 500
-        }, human_path), React.createElement(_Buttons.Button, {
-          iconBefore: "edit",
-          appearance: "primary",
-          intent: "success",
-          height: 36,
-          onClick: function onClick() {
-            return _this4.props.onEditClick(entry.Key);
-          }
-        }, "Edit/Update"));
-      });
-      return React.createElement(_layers.Pane, {
-        padding: 16,
-        border: true,
-        marginTop: 16,
-        elevation: 0
-      }, React.createElement(_typography.Heading, {
-        marginBottom: 16
-      }, "Your Files"), !file_list ? React.createElement(_spinner.Spinner, {
-        marginX: "auto",
-        marginY: 32
-      }) : "", file_list && file_list.length == 0 ? React.createElement(_typography.Text, null, " No Files Yet. Add one above!") : "", list_entries);
-    }
-  }]);
-
-  return ExistingEntries;
-}(React.Component); // XXX this is what actually starts it, as we can't do much until it's
+}(React.Component); // *****************************************************************************
+// XXX this is what actually starts it, as we can't do much until it's
+// *****************************************************************************
 
 
 gapi.load("client", function () {
   // console.log("l");
   var mountNode = document.getElementById("app");
   ReactDOM.render(React.createElement(App, null), mountNode);
-}); // -------------------------------------
-// -------------------------------------
-// just for dev and testing !
-// import { test_get_sheetsdoc } from "./get_sheetsdoc";
-// JUST FOR DEV
-// need to load gapi first
-// gapi.load("client", () => {
-//   test_get_sheetsdoc();
-// });
-},{"regenerator-runtime/runtime":"../node_modules/regenerator-runtime/runtime.js","evergreen-ui/esm/layers":"../node_modules/evergreen-ui/esm/layers/index.js","evergreen-ui/esm/side-sheet":"../node_modules/evergreen-ui/esm/side-sheet/index.js","evergreen-ui/esm/typography":"../node_modules/evergreen-ui/esm/typography/index.js","evergreen-ui/esm/Buttons":"../node_modules/evergreen-ui/esm/Buttons/index.js","evergreen-ui/esm/text-input":"../node_modules/evergreen-ui/esm/text-input/index.js","evergreen-ui/esm/table":"../node_modules/evergreen-ui/esm/table/index.js","evergreen-ui/esm/menu":"../node_modules/evergreen-ui/esm/menu/index.js","evergreen-ui/esm/toaster":"../node_modules/evergreen-ui/esm/toaster/index.js","evergreen-ui/esm/spinner":"../node_modules/evergreen-ui/esm/spinner/index.js","evergreen-ui/esm/constants":"../node_modules/evergreen-ui/esm/constants/index.js","evergreen-ui/esm/badges":"../node_modules/evergreen-ui/esm/badges/index.js","react-enroute":"../node_modules/react-enroute/build/index.js","./util":"util.js","./sf_add":"sf_add.js","./cred_edit":"cred_edit.js","./single_file":"single_file.js","./get_sheetsdoc":"get_sheetsdoc.js"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+});
+},{"regenerator-runtime/runtime":"../node_modules/regenerator-runtime/runtime.js","evergreen-ui/esm/layers":"../node_modules/evergreen-ui/esm/layers/index.js","evergreen-ui/esm/side-sheet":"../node_modules/evergreen-ui/esm/side-sheet/index.js","evergreen-ui/esm/typography":"../node_modules/evergreen-ui/esm/typography/index.js","evergreen-ui/esm/Buttons":"../node_modules/evergreen-ui/esm/Buttons/index.js","evergreen-ui/esm/text-input":"../node_modules/evergreen-ui/esm/text-input/index.js","evergreen-ui/esm/table":"../node_modules/evergreen-ui/esm/table/index.js","evergreen-ui/esm/menu":"../node_modules/evergreen-ui/esm/menu/index.js","evergreen-ui/esm/toaster":"../node_modules/evergreen-ui/esm/toaster/index.js","evergreen-ui/esm/spinner":"../node_modules/evergreen-ui/esm/spinner/index.js","evergreen-ui/esm/constants":"../node_modules/evergreen-ui/esm/constants/index.js","evergreen-ui/esm/badges":"../node_modules/evergreen-ui/esm/badges/index.js","react-enroute":"../node_modules/react-enroute/build/index.js","./util":"util.js","./sf_add":"sf_add.js","./cred_edit":"cred_edit.js","./single_file":"single_file.js","./existing":"existing.js","./get_sheetsdoc":"get_sheetsdoc.js"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -73488,7 +73551,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50342" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "63031" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
