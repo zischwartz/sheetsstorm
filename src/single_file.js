@@ -12,16 +12,10 @@ import { Spinner } from "evergreen-ui/esm/spinner";
 import { StackingOrder, Intent, Position } from "evergreen-ui/esm/constants";
 import { Badge, Pill } from "evergreen-ui/esm/badges";
 
-import {
-  asyncForEach,
-  get_cred_params,
-  set_cred_params,
-  has_all_cred,
-  setup_s3,
-  get_files,
-  put_file,
-  to_human_date
-} from "./util";
+// prettier-ignore
+import { asyncForEach, get_cred_params,  set_cred_params,  has_all_cred,  setup_s3,  get_files,  put_file,  to_human_date} from "./util";
+
+import { get_sheetsdoc } from "./get_sheetsdoc";
 
 export default class SingleFile extends React.Component {
   constructor(props) {

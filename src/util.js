@@ -16,7 +16,7 @@ export function get_cred_params() {
     bucket: urlParams.get("bucket") || "",
     key_id: urlParams.get("key_id") || "",
     secret_access_key: urlParams.get("secret_access_key") || "",
-    region: urlParams.get("region") || ""
+    region: urlParams.get("region") || "us-west-2"
   };
 }
 
