@@ -32,22 +32,22 @@ export default class CredEdit extends React.Component {
         display="flex"
         flexDirection="column"
         border
-        padding={32}
-        margin={16}
+        padding={16}
+        margin={8}
       >
         {/*<Pane fontFamily="Patua One" fontSize={60} textAlign="center">*/}
-        <Pane fontSize={60} textAlign="center">
+        <Pane marginTop={8} textAlign="center">
           <Code fontSize={28}>⛈ Sheets Storm 📊</Code>
         </Pane>
-        <Pane padding={10} marginBottom={24}>
-          <Paragraph maxWidth={600} marginX="auto" marginBottom={8}>
+        <Pane padding={10} marginY={8}>
+          <Paragraph maxWidth={450} marginY={4} marginX="auto">
             Sheets Storm is a web application built to turn Google Spreadsheets
             into JSON deployed on AWS S3 with the click of a button (and revert
             back if someone makes a mistake!)
           </Paragraph>
 
-          <Paragraph maxWidth={600} marginX="auto">
-            Enter your info below, or visit the{" "}
+          <Paragraph maxWidth={450} marginY={4} marginX="auto">
+            Enter your information below, or visit the{" "}
             <Link href="https://github.com/zischwartz/sheetsstorm">
               documentation & source repo
             </Link>
