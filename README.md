@@ -1,6 +1,6 @@
 # Sheets Storm
 
-> Sheets Storm is a web application built to turn Google Spreadsheets into JSON on AWS S3 with the click of a button. Functionally, it's a drop in replacement for [Driveshaft](https://github.com/newsdev/driveshaft), without a server.
+> [Sheets Storm](https://json.sheetsstorm.com/) is a web application built to turn Google Spreadsheets into JSON on AWS S3 with the click of a button. Functionally, it's a drop in replacement for [Driveshaft](https://github.com/newsdev/driveshaft), without a server.
 
 - [Quickstart](#quickstart)
 - [Bucket Config](#bucket-config)
@@ -20,9 +20,10 @@ You need your AWS credentials and an S3 bucket [configured](<(#bucket-config)>) 
 Under **Permissions**,
 
 **Block Public Access** should be turned off
+
 **Access Control List** should allow your aws account to read and write objects
-**Bucket Policy**
-should be be set to something like
+
+**Bucket Policy** should be be set to something like
 
 ```json
 {
@@ -42,8 +43,7 @@ should be be set to something like
 }
 ```
 
-**CORS Configuration**
-should be set to something like
+**CORS Configuration** should be set to something like
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -73,4 +73,4 @@ Clone the repo, and run `yarn && yarn start` or `npm install && npm start` to ge
 
 ## Notes
 
-- Sheets Storm tries to emulate Driveshaft as much as possible, but there appeared to be cases where Driveshaft encodes some characters incorrectly, which is not replicated here. See this line here,
+- Sheets Storm tries to emulate Driveshaft as much as possible, but there appeared to be cases where Driveshaft encodes some characters incorrectly (mostly punctuation), which is not replicated here. For more information [see this area of the code](https://github.com/zischwartz/sheetsstorm/blob/master/src/get_sheetsdoc.js#L48-L103).
