@@ -13,16 +13,16 @@ export default class SheetsFileAdd extends React.Component {
   constructor(props) {
     super(props);
     this.onSubmit = this.onSubmit.bind(this);
-    // this.state = { name: "", sheets_key: "", path: "", working: false };
+    this.state = { name: "", sheets_key: "", path: "", working: false };
     // using a stub
     // XXX JUST FOR DEV
-    console.log("populating add sheetsfile for dev");
-    this.state = {
-      name: "A human readable name",
-      sheets_key: "1aySa6njMLlXT39FHm5ikHCxoxHF-HY0JF76ERzTxm88",
-      path: "some_area/a_project",
-      working: false
-    };
+    // console.log("populating add sheetsfile for dev");
+    // this.state = {
+    //   name: "A human readable name",
+    //   sheets_key: "1aySa6njMLlXT39FHm5ikHCxoxHF-HY0JF76ERzTxm88",
+    //   path: "some_area/a_project",
+    //   working: false
+    // };
   }
   async onSubmit() {
     if (this.state.working) {

@@ -103,13 +103,14 @@ class App extends React.Component {
     this.putSheetsDataToS3 = this.putSheetsDataToS3.bind(this);
     this.credSubmit = this.credSubmit.bind(this);
     let show_cred = !has_all_cred(cred);
-    // this.state = { show_sf_add: false, show_cred, cred, selected: false };
-    this.state = {
-      show_sf_add: false,
-      show_cred,
-      cred,
-      selected: "prod/some_area/a_project.json"
-    };
+    this.state = { show_sf_add: false, show_cred, cred, selected: false };
+    // e.g. / debug
+    // this.state = {
+    //   show_sf_add: false,
+    //   show_cred,
+    //   cred,
+    //   selected: "prod/some_area/a_project.json"
+    // };
   }
   // pass this in so we can count on it being up to date, as setstate isn't syncronous
   load_files(cred) {
@@ -351,7 +352,7 @@ class SingleFile extends React.Component {
                 >
                   <Text>
                     {" "}
-                    {is_active ? "✅" : "⚫️"} {to_human_date(obj.LastModified)}
+                    {is_active ? "✅" : "⏹"} {to_human_date(obj.LastModified)}
                   </Text>
                   {!is_active ? (
                     <Button
