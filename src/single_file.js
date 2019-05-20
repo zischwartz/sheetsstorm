@@ -1,6 +1,7 @@
+import copy from "clipboard-copy";
 import { Pane } from "evergreen-ui/esm/layers";
 // prettier-ignore
-import { Text, Link, Heading, Code, Pre, Strong, Paragraph} from "evergreen-ui/esm/typography";
+import { Text, Link, Heading, Code, Pre, Strong} from "evergreen-ui/esm/typography";
 import { Button } from "evergreen-ui/esm/Buttons";
 import { TextInput, TextInputField } from "evergreen-ui/esm/text-input";
 // prettier-ignore
@@ -107,15 +108,37 @@ export default class SingleFile extends React.Component {
     return (
       <Pane padding={8} margin={8}>
         <Heading size={700} marginY={16}>
-          {this.state.meta ? this.state.meta.name : ""}
+          {this.state.meta ? this.state.meta.name : <Spinner />}
         </Heading>
         <Heading marginY={16}>
-          {this.props.selected.slice(5).slice(0, -5)}
+          <Link href={full_path} target="_blank">
+            {this.props.selected.slice(5).slice(0, -5)}
+          </Link>
         </Heading>
-
-        <Paragraph>
-          <Link href={full_path}>{full_path}</Link>
-        </Paragraph>
+        <Pane
+          display="flex"
+          marginBottom={16}
+          width="100%"
+          flexDirection="row"
+          alignItems="stretch"
+        >
+          <TextInput
+            value={full_path}
+            readOnly
+            disabled
+            flex="1"
+            cursor="text !important"
+          />
+          <Button
+            iconBefore="duplicate"
+            onClick={() => {
+              copy(full_path);
+              toaster.success("Copied URL");
+            }}
+          >
+            Copy URL
+          </Button>
+        </Pane>
         <Button
           appearance="primary"
           width={"100%"}
@@ -128,36 +151,38 @@ export default class SingleFile extends React.Component {
         </Button>
         <Heading marginY={16}>Archives</Heading>
 
-        {!this.state.archive
-          ? ``
-          : this.state.archive.map((obj, i) => {
-              let is_active = obj.Key.endsWith(`_${this.state.meta.from}.json`);
-              return (
-                <Pane
-                  key={i}
-                  background="tint2"
-                  marginY={8}
-                  padding={8}
-                  display="flex"
-                  justifyContent="space-between"
-                >
-                  <Text>
-                    {" "}
-                    {is_active ? "✅" : "⏹"} {to_human_date(obj.LastModified)}
-                  </Text>
-                  {!is_active ? (
-                    <Button
-                      iconBefore="undo"
-                      onClick={() => this.revertTo(obj.Key)}
-                    >
-                      Revert To This Version
-                    </Button>
-                  ) : (
-                    <Badge color="green">Active</Badge>
-                  )}
-                </Pane>
-              );
-            })}
+        {!this.state.archive ? (
+          <Spinner />
+        ) : (
+          this.state.archive.map((obj, i) => {
+            let is_active = obj.Key.endsWith(`_${this.state.meta.from}.json`);
+            return (
+              <Pane
+                key={i}
+                background="tint2"
+                marginY={8}
+                padding={8}
+                display="flex"
+                justifyContent="space-between"
+              >
+                <Text>
+                  {" "}
+                  {is_active ? "✅" : "⏹"} {to_human_date(obj.LastModified)}
+                </Text>
+                {!is_active ? (
+                  <Button
+                    iconBefore="undo"
+                    onClick={() => this.revertTo(obj.Key)}
+                  >
+                    Revert To This Version
+                  </Button>
+                ) : (
+                  <Badge color="green">Active</Badge>
+                )}
+              </Pane>
+            );
+          })
+        )}
         <Pane margin={16} padding={16} background="tint1">
           <Heading marginBottom={16}>Overview of Active File</Heading>
 

@@ -17,6 +17,7 @@
     "build-prod-shake": "parcel build src/index.html --no-autoinstall  --public-url . --experimental-scope-hoisting"
   },
   "dependencies": {
+    "clipboard-copy": "^3.0.0",
     "core-js": "^3.0.1",
     "evergreen-ui": "^4.15.0",
     "react": "^16.8.6",
