@@ -72647,7 +72647,10 @@ function (_React$Component) {
             update_url: e.target.checked
           });
         }
-      }), React.createElement(_Buttons.Button, {
+      }), React.createElement(_typography.Heading, {
+        size: 300,
+        textAlign: "center"
+      }, "We don't store or transmit any of your data (except to AWS). We don't even have a server."), React.createElement(_Buttons.Button, {
         appearance: "primary",
         iconBefore: "lock",
         height: "44",
@@ -73579,7 +73582,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "56337" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60337" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
