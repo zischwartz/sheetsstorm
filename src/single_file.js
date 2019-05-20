@@ -81,10 +81,13 @@ export default class SingleFile extends React.Component {
       .promise()
       .catch(e => console.log("err", e));
     archive = archive.Contents;
+    archive = archive.sort((a, b) => +b.LastModified - +a.LastModified);
+    // console.log(archive);
     let file_data_obj = JSON.parse(prod_file.Body.toString());
     let overview = Object.keys(file_data_obj).map(table_name => {
       let rows = file_data_obj[table_name].length;
-      return { table_name, rows };
+      let cols = Object.keys(file_data_obj[table_name][0]);
+      return { table_name, rows, cols };
     });
 
     this.setState({ meta, archive, overview });
@@ -99,88 +102,98 @@ export default class SingleFile extends React.Component {
     let full_path = `https://${bucket}.s3.${region}.amazonaws.com/${
       this.props.selected
     }`;
+    let d = new Date(parseInt(this.state.meta.from));
+    let active_date = to_human_date(d);
     return (
-      <Pane padding={8} margin={8}>
-        <Heading size={700} marginY={16}>
-          {this.state.meta ? this.state.meta.name : <Spinner />}
-        </Heading>
-        <Heading marginY={16}>
-          <Link href={full_path} target="_blank">
-            {this.props.selected.slice(5).slice(0, -5)}
-          </Link>
-        </Heading>
-        <Pane
-          display="flex"
-          marginBottom={16}
-          width="100%"
-          flexDirection="row"
-          alignItems="stretch"
-        >
-          <TextInput
-            value={full_path}
-            readOnly
-            disabled
-            flex="1"
-            cursor="text !important"
-          />
-          <Button
-            iconBefore="duplicate"
-            onClick={() => {
-              copy(full_path);
-              toaster.success("Copied URL");
-            }}
+      <Pane>
+        <Pane padding={8} margin={8}>
+          <Heading size={700} marginY={16}>
+            {this.state.meta ? this.state.meta.name : "..."}
+          </Heading>
+          <Heading marginY={16}>
+            <Link href={full_path} target="_blank">
+              {this.props.selected.slice(5).slice(0, -5)}
+            </Link>
+          </Heading>
+          <Pane
+            display="flex"
+            marginBottom={16}
+            width="100%"
+            flexDirection="row"
+            alignItems="stretch"
           >
-            Copy URL
+            <TextInput
+              value={full_path}
+              readOnly
+              disabled
+              flex="1"
+              cursor="text !important"
+            />
+            <Button
+              iconBefore="duplicate"
+              onClick={() => {
+                copy(full_path);
+                toaster.success("Copied URL");
+              }}
+            >
+              Copy URL
+            </Button>
+          </Pane>
+          <Button
+            appearance="primary"
+            width={"100%"}
+            height={40}
+            iconBefore="cloud-upload"
+            marginBottom={32}
+            onClick={() => this.addUpdate()}
+          >
+            Get Google Sheets Data and Upload New Version to S3
           </Button>
+          <Heading marginY={16}>Archives</Heading>
+
+          {!this.state.archive ? (
+            <Spinner />
+          ) : (
+            this.state.archive.map((obj, i) => {
+              let is_active = obj.Key.endsWith(`_${this.state.meta.from}.json`);
+              return (
+                <Pane
+                  key={i}
+                  background="tint2"
+                  marginY={8}
+                  padding={8}
+                  display="flex"
+                  justifyContent="space-between"
+                >
+                  <Text>
+                    {" "}
+                    {is_active ? "✅" : "⏹"} {to_human_date(obj.LastModified)}
+                  </Text>
+                  {!is_active ? (
+                    <Button
+                      iconBefore="undo"
+                      onClick={() => this.revertTo(obj.Key)}
+                    >
+                      Revert To This Version
+                    </Button>
+                  ) : (
+                    <Badge color="green">Active</Badge>
+                  )}
+                </Pane>
+              );
+            })
+          )}
         </Pane>
-        <Button
-          appearance="primary"
-          width={"100%"}
-          height={40}
-          iconBefore="cloud-upload"
-          marginBottom={32}
-          onClick={() => this.addUpdate()}
-        >
-          Get Google Sheets Data and Upload New Version to S3
-        </Button>
-        <Heading marginY={16}>Archives</Heading>
-
-        {!this.state.archive ? (
-          <Spinner />
-        ) : (
-          this.state.archive.map((obj, i) => {
-            let is_active = obj.Key.endsWith(`_${this.state.meta.from}.json`);
-            return (
-              <Pane
-                key={i}
-                background="tint2"
-                marginY={8}
-                padding={8}
-                display="flex"
-                justifyContent="space-between"
-              >
-                <Text>
-                  {" "}
-                  {is_active ? "✅" : "⏹"} {to_human_date(obj.LastModified)}
-                </Text>
-                {!is_active ? (
-                  <Button
-                    iconBefore="undo"
-                    onClick={() => this.revertTo(obj.Key)}
-                  >
-                    Revert To This Version
-                  </Button>
-                ) : (
-                  <Badge color="green">Active</Badge>
-                )}
-              </Pane>
-            );
-          })
-        )}
-        <Pane margin={16} padding={16} background="tint1">
-          <Heading marginBottom={16}>Overview of Active File</Heading>
-
-          {this.state.overview.map(({ table_name, rows }) => {
+        <Pane marginY={16} borderTop padding={16} background="tint1">
+          <Pane display="flex" justifyContent="space-between">
+            <Heading marginBottom={16} size={500}>
+              Overview of Active File
+            </Heading>
+            <Heading marginBottom={16} size={400}>
+              {active_date}
+            </Heading>
+          </Pane>
+          {this.state.overview.map(({ table_name, rows, cols }) => {
             return (
               <Pane
                 key={table_name}
@@ -190,7 +203,9 @@ export default class SingleFile extends React.Component {
                 marginBottom={2}
               >
                 <Code>{table_name}</Code>
-                <Text>{rows} rows</Text>
+                <Text>
+                  {rows} rows x {cols.length} cols
+                </Text>
               </Pane>
             );
           })}
