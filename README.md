@@ -15,7 +15,55 @@ You need your AWS credentials and an S3 bucket [configured](<(#bucket-config)>) 
 
 ## Bucket Config
 
+`"Static website Hosting"` should be turned on.
+
+Under **Permissions**,
+
+**Block Public Access** should be turned off
+**Access Control List** should allow your aws account to read and write objects
+**Bucket Policy**
+should be be set to something like
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PublicListGet",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": ["s3:List*", "s3:Get*", "s3:Put*"],
+      "Resource": [
+        "arn:aws:s3:::YOUR_BUCKET_NAME",
+        "arn:aws:s3:::YOUR_BUCKET_NAME/*"
+      ]
+    }
+  ]
+}
 ```
+
+**CORS Configuration**
+should be set to something like
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<CORSConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+<CORSRule>
+    <AllowedOrigin>*</AllowedOrigin>
+    <AllowedMethod>HEAD</AllowedMethod>
+    <AllowedMethod>GET</AllowedMethod>
+    <AllowedMethod>PUT</AllowedMethod>
+    <AllowedMethod>POST</AllowedMethod>
+    <AllowedMethod>DELETE</AllowedMethod>
+    <ExposeHeader>ETag</ExposeHeader>
+    <ExposeHeader>x-amz-meta-custom-header</ExposeHeader>
+    <ExposeHeader>x-amz-meta-from</ExposeHeader>
+    <ExposeHeader>x-amz-meta-name</ExposeHeader>
+    <ExposeHeader>x-amz-meta-sheets_key</ExposeHeader>
+    <AllowedHeader>*</AllowedHeader>
+</CORSRule>
+</CORSConfiguration>
+
 
 ```
 
