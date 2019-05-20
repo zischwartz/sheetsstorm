@@ -72617,7 +72617,8 @@ function (_React$Component) {
             secret_access_key: e.target.value
           });
         },
-        value: this.state.secret_access_key
+        value: this.state.secret_access_key,
+        autocomplete: "new-password"
       }), React.createElement(_textInput.TextInputField, {
         placeholder: "Some general bucket",
         label: "S3 Bucket",
@@ -72639,7 +72640,7 @@ function (_React$Component) {
         },
         value: this.state.region
       }), React.createElement(_checkbox.Checkbox, {
-        label: "Update Page URL With These Settings",
+        label: "Update Page URL With These Settings (Turn this off if using a public computer)",
         checked: this.state.update_url,
         onChange: function onChange(e) {
           return _this2.setState({
@@ -73578,7 +73579,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54093" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "56337" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
