@@ -3,21 +3,26 @@ import { asyncForEach } from "./util";
 
 export async function get_sheetsdoc(sheets_doc_key) {
   let result = {};
-  await gapi.client.init({
-    apiKey: process.env.GOOGLE_API_KEY
-  });
-  let sheets_arr = await gapi.client.request({
-    path: `https://sheets.googleapis.com/v4/spreadsheets/${sheets_doc_key}?&fields=sheets.properties`
-  });
-  await asyncForEach(sheets_arr.result.sheets, async a_sheet => {
-    let single_sheet_title = a_sheet["properties"]["title"];
-    single_sheet_title = single_sheet_title;
-    let sheet_data = await gapi.client.request({
-      path: `https://sheets.googleapis.com/v4/spreadsheets/${sheets_doc_key}/values/${single_sheet_title}`
+  try {
+    await gapi.client.init({
+      apiKey: process.env.GOOGLE_API_KEY
     });
-    result[single_sheet_title] = objectify(sheet_data.result.values);
-  });
-  return result;
+    let sheets_arr = await gapi.client.request({
+      path: `https://sheets.googleapis.com/v4/spreadsheets/${sheets_doc_key}?&fields=sheets.properties`
+    });
+    await asyncForEach(sheets_arr.result.sheets, async a_sheet => {
+      let single_sheet_title = a_sheet["properties"]["title"];
+      single_sheet_title = single_sheet_title;
+      let sheet_data = await gapi.client.request({
+        path: `https://sheets.googleapis.com/v4/spreadsheets/${sheets_doc_key}/values/${single_sheet_title}`
+      });
+      result[single_sheet_title] = objectify(sheet_data.result.values);
+    });
+    return result;
+  } catch (e) {
+    console.log(e);
+    return false;
+  }
 }
 
 function objectify(values_arr) {

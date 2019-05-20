@@ -6,16 +6,17 @@ import { TextInput, TextInputField } from "evergreen-ui/esm/text-input";
 // prettier-ignore
 import { Menu } from "evergreen-ui/esm/menu";
 import { toaster } from "evergreen-ui/esm/toaster";
+import { Checkbox } from "evergreen-ui/esm/checkbox";
 
 import { get_sheetsdoc } from "./get_sheetsdoc";
 
 export default class CredEdit extends React.Component {
   constructor(props) {
     super(props);
-    let { bucket = "", key_id = "", secret_access_key = "" } = props.cred || {};
-    // let { bucket = "", key_id = "", secret_access_key = "" } = props.cred;
-    this.state = { bucket, key_id, secret_access_key };
-    // this.state = { bucket: "", key_id: "", secret_access_key: "" };
+    let { bucket, key_id, secret_access_key, region } = props.cred;
+    region = region.length ? region : "us-west-2";
+    let update_url = true;
+    this.state = { bucket, key_id, secret_access_key, region, update_url };
   }
 
   render() {
@@ -55,7 +56,18 @@ export default class CredEdit extends React.Component {
           onChange={e => this.setState({ bucket: e.target.value })}
           value={this.state.bucket}
         />
-
+        <TextInputField
+          placeholder="us-west-2"
+          label="AWS Region"
+          onKeyPress={on_enter}
+          onChange={e => this.setState({ region: e.target.value })}
+          value={this.state.region}
+        />
+        <Checkbox
+          label="Update Page URL With These Settings"
+          checked={this.state.update_url}
+          onChange={e => this.setState({ update_url: e.target.checked })}
+        />
         <Button
           appearance="primary"
           iconBefore="lock"

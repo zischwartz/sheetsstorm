@@ -14,36 +14,59 @@ export default class SheetsFileAdd extends React.Component {
     super(props);
     this.onSubmit = this.onSubmit.bind(this);
     this.state = { name: "", sheets_key: "", path: "", working: false };
-    // using a stub
     // XXX JUST FOR DEV
     // console.log("populating add sheetsfile for dev");
-    // this.state = {
-    //   name: "A human readable name",
-    //   sheets_key: "1aySa6njMLlXT39FHm5ikHCxoxHF-HY0JF76ERzTxm88",
-    //   path: "some_area/a_project",
-    //   working: false
-    // };
+    // this.state = { name: "A human readable name", sheets_key: "1aySa6njMLlXT39FHm5ikHCxoxHF-HY0JF76ERzTxm88", path: "some_area/a_project", working: false };
   }
   async onSubmit() {
     if (this.state.working) {
       return;
     }
-    this.setState({ working: true });
     // we may want to do more validation here...
-    let isvalid =
-      this.state["name"] && this.state["sheets_key"] && this.state["path"];
-    if (!isvalid) {
-      toaster.warning(
-        "The form has a missing or invalid field, please fix it first."
-      );
+    let { name, sheets_key, path } = this.state;
+    path = path.trim();
+    let is_valid = name.length && sheets_key.length && path.length;
+    is_valid = is_valid && !path.includes(" ");
+    if (!is_valid) {
+      toaster.closeAll();
+      // prettier-ignore
+      toaster.warning("The form has a missing or invalid field, please fix it first.");
       return;
     }
+    // a quick way to go from `prod/somearea/someproj.json` to `somearea/someproj`
+    let { file_list } = this.props;
+    let existing_paths = file_list.map(p => p.Key.slice(5).slice(0, -5));
+    if (existing_paths.includes(path)) {
+      toaster.closeAll();
+      // prettier-ignore
+      toaster.warning("A File with that path already exists! You can't add it again, but you can go update it.");
+      return;
+    }
+    if (
+      path.includes("archive/") ||
+      path.includes("prod/") ||
+      path.includes(".json")
+    ) {
+      toaster.closeAll();
+      // prettier-ignore
+      toaster.warning("Path contains blacklisted string, try again please");
+      return;
+    }
+    this.setState({ working: true });
     toaster.notify("Fetching the Google Sheets Document...", { duration: 120 });
     let sheets_doc = await get_sheetsdoc(this.state["sheets_key"]);
+    if (!sheets_doc) {
+      toaster.closeAll();
+      // prettier-ignore
+      toaster.warning("There was a problem getting the file from Google Sheets. Please check the url and make sure it's set to public.");
+      this.setState({ working: false });
+      return;
+    }
     // console.log(sheets_doc);
     toaster.closeAll();
     toaster.success(`Successfully loaded data for "${this.state.name}"`);
-    this.props.onComplete(this.state, sheets_doc);
+    this.props.onComplete({ name, sheets_key, path }, sheets_doc);
+    // this.props.onComplete(this.state, sheets_doc);
   }
   render() {
     let on_enter = e => {
