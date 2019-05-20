@@ -72573,24 +72573,25 @@ function (_React$Component) {
         display: "flex",
         flexDirection: "column",
         border: true,
-        padding: 32,
-        margin: 16
+        padding: 16,
+        margin: 8
       }, React.createElement(_layers.Pane, {
-        fontSize: 60,
+        marginTop: 8,
         textAlign: "center"
       }, React.createElement(_typography.Code, {
         fontSize: 28
       }, "\u26C8 Sheets Storm \uD83D\uDCCA")), React.createElement(_layers.Pane, {
         padding: 10,
-        marginBottom: 24
+        marginY: 8
       }, React.createElement(_typography.Paragraph, {
-        maxWidth: 600,
-        marginX: "auto",
-        marginBottom: 8
-      }, "Sheets Storm is a web application built to turn Google Spreadsheets into JSON deployed on AWS S3 with the click of a button (and revert back if someone makes a mistake!)"), React.createElement(_typography.Paragraph, {
-        maxWidth: 600,
+        maxWidth: 450,
+        marginY: 4,
         marginX: "auto"
-      }, "Enter your info below, or visit the", " ", React.createElement(_typography.Link, {
+      }, "Sheets Storm is a web application built to turn Google Spreadsheets into JSON deployed on AWS S3 with the click of a button (and revert back if someone makes a mistake!)"), React.createElement(_typography.Paragraph, {
+        maxWidth: 450,
+        marginY: 4,
+        marginX: "auto"
+      }, "Enter your information below, or visit the", " ", React.createElement(_typography.Link, {
         href: "https://github.com/zischwartz/sheetsstorm"
       }, "documentation & source repo"), ".")), React.createElement(_typography.Heading, {
         size: 500,
@@ -73551,7 +73552,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "63031" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60776" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
