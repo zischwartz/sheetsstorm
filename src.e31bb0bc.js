@@ -73018,6 +73018,7 @@ function (_React$Component) {
       var full_path = "https://".concat(bucket, ".s3.").concat(region, ".amazonaws.com/").concat(this.props.selected);
       var d = new Date(parseInt(this.state.meta.from));
       var active_date = (0, _util.to_human_date)(d);
+      var sheets_key = this.state.meta.sheets_key;
       return React.createElement(_layers.Pane, null, React.createElement(_layers.Pane, {
         padding: 8,
         margin: 8
@@ -73027,9 +73028,14 @@ function (_React$Component) {
       }, this.state.meta ? this.state.meta.name : "..."), React.createElement(_typography.Heading, {
         marginY: 16
       }, React.createElement(_typography.Link, {
+        href: "https://docs.google.com/spreadsheets/d/".concat(sheets_key),
+        target: "_blank"
+      }, "Google Sheets Document"), React.createElement(_typography.Link, {
+        marginLeft: 8,
+        size: 300,
         href: full_path,
         target: "_blank"
-      }, this.props.selected.slice(5).slice(0, -5))), React.createElement(_layers.Pane, {
+      }, this.props.selected.slice(5)), " "), React.createElement(_layers.Pane, {
         display: "flex",
         marginBottom: 16,
         width: "100%",
@@ -73572,7 +73578,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59628" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54093" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
