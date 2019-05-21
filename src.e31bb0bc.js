@@ -72598,7 +72598,7 @@ function (_React$Component) {
         marginX: "auto"
       }, "Enter your information below, or visit the", " ", React.createElement(_typography.Link, {
         href: "https://github.com/zischwartz/sheetsstorm"
-      }, "documentation & source repo"), ".")), React.createElement(_typography.Heading, {
+      }, "source repo & documentation for information"), " ", "and bucket settings.")), React.createElement(_typography.Heading, {
         size: 500,
         marginBottom: 8,
         textAlign: "center"
@@ -73055,7 +73055,7 @@ function (_React$Component) {
         value: full_path,
         readOnly: true,
         disabled: true,
-        color: "rgb(100,100,100)",
+        color: "rgb(20,20,20)",
         flex: "1",
         cursor: "text !important"
       }), React.createElement(_Buttons.Button, {
@@ -73599,7 +73599,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "57688" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53336" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
