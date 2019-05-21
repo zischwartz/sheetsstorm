@@ -71822,16 +71822,17 @@ function _get_sheetsdoc() {
               var _ref = _asyncToGenerator(
               /*#__PURE__*/
               regeneratorRuntime.mark(function _callee(a_sheet) {
-                var single_sheet_title, sheet_data;
+                var single_sheet_title, enc_single_sheet_title, sheet_data;
                 return regeneratorRuntime.wrap(function _callee$(_context) {
                   while (1) {
                     switch (_context.prev = _context.next) {
                       case 0:
                         single_sheet_title = a_sheet["properties"]["title"];
-                        single_sheet_title = single_sheet_title;
+                        enc_single_sheet_title = encodeURIComponent(single_sheet_title); // console.log(single_sheet_title);
+
                         _context.next = 4;
                         return gapi.client.request({
-                          path: "https://sheets.googleapis.com/v4/spreadsheets/".concat(sheets_doc_key, "/values/").concat(single_sheet_title)
+                          path: "https://sheets.googleapis.com/v4/spreadsheets/".concat(sheets_doc_key, "/values/").concat(enc_single_sheet_title)
                         });
 
                       case 4:
@@ -71881,10 +71882,18 @@ function objectify(values_arr) {
     });
     return obj;
   });
-} // cleaner but not what driveshaft is doing as much
-// row.forEach((v, i) => {
-//   let head = col_headers[i];
-//   obj[head] = v === "" ? null : v;
+} // a newer test, more complicated tabsheet titles, escaping, also just for dev
+// gapi.load("client", async () => {
+//   let result = await get_sheetsdoc(
+//     "1xa0iLqYKz8x9Yc_rfhtmSOJQ2EGgeUVjvV4A8LsIaxY"
+//   );
+//   console.log(result);
+// });
+// JUST FOR DEV
+// uncomment this to run the test above
+// need to load gapi first
+// gapi.load("client", () => {
+//   test_get_sheetsdoc();
 // });
 // just for dev !
 
@@ -71897,13 +71906,7 @@ delete _raai_index_.default["Leader\\x27s List 2019 vs 2017"]; // usefull http:/
 
 function test_get_sheetsdoc() {
   return _test_get_sheetsdoc.apply(this, arguments);
-} // JUST FOR DEV
-// uncomment this to run the test above
-// need to load gapi first
-// gapi.load("client", () => {
-//   test_get_sheetsdoc();
-// });
-
+}
 
 function _test_get_sheetsdoc() {
   _test_get_sheetsdoc = _asyncToGenerator(
@@ -72208,8 +72211,9 @@ function (_React$Component) {
         value: this.state.path,
         disabled: this.state.working
       }), React.createElement(_textInput.TextInputField, {
-        placeholder: "Google Sheets URL",
+        placeholder: "https://docs.google.com/spreadsheets/d/SOME_GOOGLE_SHEETS_DOC_ID",
         onKeyPress: on_enter,
+        description: "The document must be set to public i.e. 'anyone with the link can view' ",
         disabled: this.state.working,
         label: "Google Sheets Document URL",
         onChange: function onChange(e) {
@@ -72586,7 +72590,7 @@ function (_React$Component) {
       }, React.createElement(_typography.Paragraph, {
         marginY: 4,
         marginX: "auto"
-      }, "Sheets Storm is a web application built to turn Google Spreadsheets into JSON deployed on AWS S3 with the click of a button (and revert back to previous versions if someone makes a mistake!)"), React.createElement(_typography.Paragraph, {
+      }, "Sheets Storm is a web application built to turn Google Drive (Spread) Sheets into JSON deployed on AWS S3 with the click of a button (and revert back to previous versions if someone makes a mistake!)"), React.createElement(_typography.Paragraph, {
         marginY: 4,
         marginX: "auto"
       }), React.createElement(_typography.Paragraph, {
@@ -72650,7 +72654,7 @@ function (_React$Component) {
       }), React.createElement(_typography.Heading, {
         size: 300,
         textAlign: "center"
-      }, "We don't store or transmit any of your data (except to AWS). We don't even have a server."), React.createElement(_Buttons.Button, {
+      }, "This service does ", React.createElement("strong", null, "not"), " store or transmit any of your data (except to AWS). There isn't even a server."), React.createElement(_Buttons.Button, {
         appearance: "primary",
         iconBefore: "lock",
         height: "44",
@@ -73030,16 +73034,18 @@ function (_React$Component) {
         size: 700,
         marginY: 16
       }, this.state.meta ? this.state.meta.name : "..."), React.createElement(_typography.Heading, {
-        marginY: 16
+        marginY: 16,
+        display: "flex",
+        justifyContent: "space-between"
       }, React.createElement(_typography.Link, {
         href: "https://docs.google.com/spreadsheets/d/".concat(sheets_key),
         target: "_blank"
-      }, "Google Sheets Document"), React.createElement(_typography.Link, {
+      }, "Google Sheets Document Link"), React.createElement(_typography.Link, {
         marginLeft: 8,
         size: 300,
         href: full_path,
         target: "_blank"
-      }, this.props.selected.slice(5)), " "), React.createElement(_layers.Pane, {
+      }, React.createElement(_typography.Code, null, this.props.selected.slice(5))), " "), React.createElement(_layers.Pane, {
         display: "flex",
         marginBottom: 16,
         width: "100%",
@@ -73049,6 +73055,7 @@ function (_React$Component) {
         value: full_path,
         readOnly: true,
         disabled: true,
+        color: "rgb(100,100,100)",
         flex: "1",
         cursor: "text !important"
       }), React.createElement(_Buttons.Button, {
@@ -73450,10 +73457,17 @@ function (_React$Component) {
     value: function render() {
       var _this3 = this;
 
-      var full_cred_flag = (0, _util.has_all_cred)(this.state.cred);
+      var full_cred_flag = (0, _util.has_all_cred)(this.state.cred); // <Pane display="flex" minHeight="100vh" flexDirection="column">
+      // <Pane flex={1}>
+
       return React.createElement(_layers.Pane, {
         display: "flex",
+        minHeight: "98vh",
         flexDirection: "column"
+      }, React.createElement(_layers.Pane, {
+        display: "flex",
+        flexDirection: "column",
+        flex: 1
       }, React.createElement(_sideSheet.SideSheet, {
         position: _constants.Position.TOP,
         isShown: this.state.show_sf_add,
@@ -73539,7 +73553,10 @@ function (_React$Component) {
             return _ref.apply(this, arguments);
           };
         }()
-      }));
+      })), React.createElement(_layers.Pane, {
+        textAlign: "center",
+        marginTop: 32
+      }, React.createElement(_typography.Text, null, "Footer")));
     }
   }]);
 
@@ -73582,7 +73599,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60337" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "57688" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
