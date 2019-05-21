@@ -73025,7 +73025,7 @@ function (_React$Component) {
           region = _this$props$cred.region;
       var full_path = "https://".concat(bucket, ".s3.").concat(region, ".amazonaws.com/").concat(this.props.selected);
       var d = new Date(parseInt(this.state.meta.from));
-      var active_date = (0, _util.to_human_date)(d);
+      var active_date = this.state.meta.from ? (0, _util.to_human_date)(d) : "";
       var sheets_key = this.state.meta.sheets_key;
       return React.createElement(_layers.Pane, null, React.createElement(_layers.Pane, {
         padding: 8,
@@ -73599,7 +73599,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53336" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53432" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
