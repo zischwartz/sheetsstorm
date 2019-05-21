@@ -103,8 +103,9 @@ export default class SheetsFileAdd extends React.Component {
           disabled={this.state.working}
         />
         <TextInputField
-          placeholder="Google Sheets URL"
+          placeholder="https://docs.google.com/spreadsheets/d/SOME_GOOGLE_SHEETS_DOC_ID"
           onKeyPress={on_enter}
+          description="The document must be set to public i.e. 'anyone with the link can view' "
           disabled={this.state.working}
           label="Google Sheets Document URL"
           onChange={e => {

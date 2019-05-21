@@ -12,9 +12,10 @@ export async function get_sheetsdoc(sheets_doc_key) {
     });
     await asyncForEach(sheets_arr.result.sheets, async a_sheet => {
       let single_sheet_title = a_sheet["properties"]["title"];
-      single_sheet_title = single_sheet_title;
+      let enc_single_sheet_title = encodeURIComponent(single_sheet_title);
+      // console.log(single_sheet_title);
       let sheet_data = await gapi.client.request({
-        path: `https://sheets.googleapis.com/v4/spreadsheets/${sheets_doc_key}/values/${single_sheet_title}`
+        path: `https://sheets.googleapis.com/v4/spreadsheets/${sheets_doc_key}/values/${enc_single_sheet_title}`
       });
       result[single_sheet_title] = objectify(sheet_data.result.values);
     });
@@ -38,10 +39,19 @@ function objectify(values_arr) {
   });
 }
 
-// cleaner but not what driveshaft is doing as much
-// row.forEach((v, i) => {
-//   let head = col_headers[i];
-//   obj[head] = v === "" ? null : v;
+// a newer test, more complicated tabsheet titles, escaping, also just for dev
+// gapi.load("client", async () => {
+//   let result = await get_sheetsdoc(
+//     "1xa0iLqYKz8x9Yc_rfhtmSOJQ2EGgeUVjvV4A8LsIaxY"
+//   );
+//   console.log(result);
+// });
+
+// JUST FOR DEV
+// uncomment this to run the test above
+// need to load gapi first
+// gapi.load("client", () => {
+//   test_get_sheetsdoc();
 // });
 
 // just for dev !
@@ -94,10 +104,3 @@ export async function test_get_sheetsdoc() {
 
   console.log(`Score: ${score} (/${keys.length})`);
 }
-
-// JUST FOR DEV
-// uncomment this to run the test above
-// need to load gapi first
-// gapi.load("client", () => {
-//   test_get_sheetsdoc();
-// });

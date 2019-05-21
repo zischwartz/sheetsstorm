@@ -90,69 +90,77 @@ class App extends React.Component {
   }
   render() {
     let full_cred_flag = has_all_cred(this.state.cred);
+    // <Pane display="flex" minHeight="100vh" flexDirection="column">
+    // <Pane flex={1}>
+
     return (
-      <Pane display="flex" flexDirection="column">
-        <SideSheet
-          position={Position.TOP}
-          isShown={this.state.show_sf_add}
-          onCloseComplete={() => this.setState({ show_sf_add: false })}
-        >
-          <SheetsFileAdd
-            onComplete={this.putSheetsDataToS3}
-            file_list={this.state.file_list}
-          />
-        </SideSheet>
-        <SideSheet
-          position={Position.BOTTOM}
-          isShown={this.state.show_cred}
-          onCloseComplete={() => this.setState({ show_cred: false })}
-        >
-          <CredEdit onSubmit={this.credSubmit} cred={this.state.cred} />
-        </SideSheet>
-        {!this.s3 ? (
-          ``
-        ) : (
+      <Pane display="flex" minHeight="98vh" flexDirection="column">
+        <Pane display="flex" flexDirection="column" flex={1}>
           <SideSheet
-            position={Position.LEFT}
-            isShown={!!this.state.selected}
-            onCloseComplete={() => this.setState({ selected: false })}
+            position={Position.TOP}
+            isShown={this.state.show_sf_add}
+            onCloseComplete={() => this.setState({ show_sf_add: false })}
           >
-            <SingleFile
-              s3={this.s3}
-              cred={this.state.cred}
-              selected={this.state.selected}
-              putSheetsDataToS3={this.putSheetsDataToS3}
+            <SheetsFileAdd
+              onComplete={this.putSheetsDataToS3}
+              file_list={this.state.file_list}
             />
           </SideSheet>
-        )}
+          <SideSheet
+            position={Position.BOTTOM}
+            isShown={this.state.show_cred}
+            onCloseComplete={() => this.setState({ show_cred: false })}
+          >
+            <CredEdit onSubmit={this.credSubmit} cred={this.state.cred} />
+          </SideSheet>
+          {!this.s3 ? (
+            ``
+          ) : (
+            <SideSheet
+              position={Position.LEFT}
+              isShown={!!this.state.selected}
+              onCloseComplete={() => this.setState({ selected: false })}
+            >
+              <SingleFile
+                s3={this.s3}
+                cred={this.state.cred}
+                selected={this.state.selected}
+                putSheetsDataToS3={this.putSheetsDataToS3}
+              />
+            </SideSheet>
+          )}
 
-        <Pane textAlign="center">
-          <Code>⛈ Sheets Storm 📊</Code>
+          <Pane textAlign="center">
+            <Code>⛈ Sheets Storm 📊</Code>
+          </Pane>
+          <Button
+            appearance="primary"
+            iconBefore="plus"
+            height="44"
+            marginTop={16}
+            onClick={() => this.setState({ show_sf_add: true })}
+          >
+            Add a new Google Sheets Document
+          </Button>
+          <Button
+            marginTop={16}
+            appearance={full_cred_flag ? "default" : "primary"}
+            iconBefore="lock"
+            height="44"
+            onClick={() => this.setState({ show_cred: true })}
+          >
+            {full_cred_flag ? "Edit" : "Add"} AWS Credentials & Bucket
+          </Button>
+          <ExistingEntries
+            file_list={this.state.file_list}
+            onEditClick={async path => {
+              this.setState({ selected: path });
+            }}
+          />
         </Pane>
-        <Button
-          appearance="primary"
-          iconBefore="plus"
-          height="44"
-          marginTop={16}
-          onClick={() => this.setState({ show_sf_add: true })}
-        >
-          Add a new Google Sheets Document
-        </Button>
-        <Button
-          marginTop={16}
-          appearance={full_cred_flag ? "default" : "primary"}
-          iconBefore="lock"
-          height="44"
-          onClick={() => this.setState({ show_cred: true })}
-        >
-          {full_cred_flag ? "Edit" : "Add"} AWS Credentials & Bucket
-        </Button>
-        <ExistingEntries
-          file_list={this.state.file_list}
-          onEditClick={async path => {
-            this.setState({ selected: path });
-          }}
-        />
+        <Pane textAlign="center" marginTop={32}>
+          <Text>Footer</Text>
+        </Pane>
       </Pane>
     );
   }

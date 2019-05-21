@@ -51,9 +51,9 @@ export default class CredEdit extends React.Component {
           <Paragraph marginY={4} marginX="auto">
             Enter your information below, or visit the{" "}
             <Link href="https://github.com/zischwartz/sheetsstorm">
-              documentation & source repo
-            </Link>
-            .
+              source repo & documentation for information
+            </Link>{" "}
+            and bucket settings.
           </Paragraph>
         </Pane>
         <Heading size={500} marginBottom={8} textAlign="center">
@@ -94,8 +94,8 @@ export default class CredEdit extends React.Component {
           onChange={e => this.setState({ update_url: e.target.checked })}
         />
         <Heading size={300} textAlign="center">
-          We don't store or transmit any of your data (except to AWS). We don't
-          even have a server.
+          This service does <strong>not</strong> store or transmit any of your
+          data (except to AWS). There isn't even a server.
         </Heading>
 
         <Button

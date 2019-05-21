@@ -103,7 +103,7 @@ export default class SingleFile extends React.Component {
       this.props.selected
     }`;
     let d = new Date(parseInt(this.state.meta.from));
-    let active_date = to_human_date(d);
+    let active_date = this.state.meta.from ? to_human_date(d) : "";
     let { sheets_key } = this.state.meta;
     return (
       <Pane>
@@ -111,15 +111,15 @@ export default class SingleFile extends React.Component {
           <Heading size={700} marginY={16}>
             {this.state.meta ? this.state.meta.name : "..."}
           </Heading>
-          <Heading marginY={16}>
+          <Heading marginY={16} display="flex" justifyContent="space-between">
             <Link
               href={`https://docs.google.com/spreadsheets/d/${sheets_key}`}
               target="_blank"
             >
-              Google Sheets Document
+              Google Sheets Document Link
             </Link>
             <Link marginLeft={8} size={300} href={full_path} target="_blank">
-              {this.props.selected.slice(5)}
+              <Code>{this.props.selected.slice(5)}</Code>
             </Link>{" "}
           </Heading>
           <Pane
@@ -133,6 +133,7 @@ export default class SingleFile extends React.Component {
               value={full_path}
               readOnly
               disabled
+              color="rgb(20,20,20)"
               flex="1"
               cursor="text !important"
             />
