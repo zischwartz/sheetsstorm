@@ -73,8 +73,17 @@ class App extends React.Component {
     // we'll use these later
     let meta = { name: info.name, from: now, sheets_key: info.sheets_key };
     let body = JSON.stringify(sheets_doc);
-    await put_file(this.s3, `prod/${info.path}.json`, body, meta);
-    await put_file(this.s3, `archive/${info.path}_${now}.json`, body, {});
+    try {
+      await put_file(this.s3, `prod/${info.path}.json`, body, meta);
+      await put_file(this.s3, `archive/${info.path}_${now}.json`, body, {});
+    } catch (e) {
+      console.log(e);
+      toaster.closeAll();
+      // prettier-ignore
+      toaster.warning( "Publishing to S3 Failed! Make sure your credentials are correct and you have adequate permissions.",  { duration: 15 } );
+      return;
+    }
+
     toaster.closeAll();
     toaster.success("Done with upload to S3!", { duration: 15 });
     // repull the list to update ui

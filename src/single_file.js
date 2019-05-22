@@ -53,12 +53,20 @@ export default class SingleFile extends React.Component {
       .getObject({ Key: path_of_archive })
       .promise();
     let meta = { name, from: ts, sheets_key };
-    await put_file(
-      this.props.s3,
-      this.props.selected,
-      archive_file.Body.toString(),
-      meta
-    );
+    try {
+      await put_file(
+        this.props.s3,
+        this.props.selected,
+        archive_file.Body.toString(),
+        meta
+      );
+    } catch (e) {
+      toaster.closeAll();
+      // prettier-ignore
+      toaster.warning( "Publishing to S3 Failed! Make sure your credentials are correct and you have adequate permissions.",  { duration: 15 } );
+      return false;
+    }
+
     await this.loadFileAndArchives();
     toaster.closeAll();
     toaster.success(`Successfully Reverted`);
