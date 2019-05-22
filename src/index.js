@@ -20,6 +20,8 @@ import { StackingOrder, Intent, Position } from "evergreen-ui/esm/constants";
 import { Badge, Pill } from "evergreen-ui/esm/badges";
 
 import { Router, Route } from "react-enroute";
+import { SocialIcon } from "react-social-icons";
+
 // prettier-ignore
 import { asyncForEach, get_cred_params,  set_cred_params,  has_all_cred,  setup_s3,  get_files,  put_file,  to_human_date} from "./util";
 import SheetsFileAdd from "./sf_add";
@@ -158,13 +160,53 @@ class App extends React.Component {
             }}
           />
         </Pane>
-        <Pane textAlign="center" marginTop={32}>
-          <Text>Footer</Text>
+        <Pane
+          textAlign="center"
+          marginTop={32}
+          display="flex"
+          justifyContent="center"
+        >
+          <Pane marginX={8}>
+            <Text size={400}>
+              Made By{" "}
+              <Link size={400} href="https://zachschwartz.com">
+                Zach Schwartz
+              </Link>
+              <SocialIcon
+                url="https://github.com/zischwartz"
+                style={soc_style}
+              />
+              <SocialIcon
+                url="https://twitter.com/zischwartz"
+                style={soc_style}
+              />
+            </Text>
+          </Pane>
+          <Pane>
+            <Text size={400}>&</Text>
+          </Pane>
+          <Pane marginX={8}>
+            <Text size={400}>
+              <Link size={400} href="https://newamerica.org">
+                New America
+              </Link>
+              <SocialIcon
+                url="https://github.com/newamericafoundation"
+                style={soc_style}
+              />
+              <SocialIcon
+                url="https://twitter.com/NewAmerica"
+                style={soc_style}
+              />
+            </Text>
+          </Pane>
         </Pane>
       </Pane>
     );
   }
 }
+
+const soc_style = { height: 16, width: 16, marginLeft: 4, marginRight: 4 };
 
 // *****************************************************************************
 // XXX this is what actually starts it, as we can't do much until it's

@@ -8,11 +8,12 @@
   "license": "ISC",
   "browserslist": "> 0.25%, not dead",
   "scripts": {
-    "clean": "rm dist/bundle.js",
     "cname": "echo 'json.sheetsstorm.com' > dist/CNAME",
     "start": "parcel src/index.html --no-autoinstall",
-    "build-prod": "parcel build src/index.html --no-autoinstall  --public-url . ",
-    "deploy": "yarn cname && yarn gh-pages -d dist ",
+    "clean": "rm -R dist && mkdir dist",
+    "cp": "cp -R examples dist/examples && cp assets/screenshot.png dist/screenshot.png",
+    "build-prod": "yarn clean && parcel build src/index.html --no-autoinstall  --public-url . --no-source-maps ",
+    "deploy": "yarn cname && yarn cp && yarn gh-pages -d dist ",
     "ship": "yarn build-prod && yarn deploy ",
     "build-prod-shake": "parcel build src/index.html --no-autoinstall  --public-url . --experimental-scope-hoisting"
   },
@@ -23,6 +24,7 @@
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-enroute": "^2.0.0",
+    "react-social-icons": "^4.1.0",
     "regenerator-runtime": "^0.13.2"
   },
   "devDependencies": {
