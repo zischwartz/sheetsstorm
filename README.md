@@ -33,10 +33,10 @@ Under **Permissions**,
       "Sid": "PublicListGet",
       "Effect": "Allow",
       "Principal": "*",
-      "Action": ["s3:List*", "s3:Get*", "s3:Put*"],
+      "Action": ["s3:List*", "s3:Get*"],
       "Resource": [
-        "arn:aws:s3:::YOUR_BUCKET_NAME",
-        "arn:aws:s3:::YOUR_BUCKET_NAME/*"
+        "arn:aws:s3:::na-data-sheetsstorm",
+        "arn:aws:s3:::na-data-sheetsstorm/*"
       ]
     }
   ]

@@ -132,8 +132,25 @@ class App extends React.Component {
             </SideSheet>
           )}
 
-          <Pane textAlign="center">
+          <Pane
+            textAlign="center"
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+          >
             <Code>⛈ Sheets Storm 📊</Code>
+            {full_cred_flag ? (
+              <Pane marginLeft={16}>
+                <Code>
+                  <Badge color="yellow" marginRight={4}>
+                    Bucket:
+                  </Badge>
+                  {this.state.cred.bucket}
+                </Code>
+              </Pane>
+            ) : (
+              ""
+            )}
           </Pane>
           <Button
             appearance="primary"
