@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sheets Storm Example Usage</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=0.5" />
+    <link href="/favicon.ico" rel="icon" type="image/x-icon" />
+    <script src="https://d3js.org/d3.v5.js"></script>
+    <style media="screen">
+      div.item {
+        margin: 5px;
+        padding: 5px;
+        background-color: rgb(230, 230, 230);
+      }
+      code {
+        float: right;
+        color: green;
+      }
+    </style>
+    <script type="text/javascript">
+      fetch(
+        "https://na-data-sheetsstorm.s3.us-west-2.amazonaws.com/prod/general_program/specific_project_7.json"
+      )
+        .then(function(response) {
+          return response.json();
+        })
+        .then(function(data) {
+          let result = `<h1>Sheet Storm Simple Example Usage</h1>`;
+          result += data["All Funds Data"]
+            .map(x => {
+              return `<div class='item'>${x["Fund Name"]} <code>$${
+                x["aum $bn"]
+              } Billion</code></div>`;
+            })
+            .join("");
+          document.getElementById("app").innerHTML = result;
+        });
+    </script>
+  </head>
+  <body>
+    <div id="desc"></div>
+    <div id="app">Loading...</div>
+  </body>
+</html>
