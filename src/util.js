@@ -26,13 +26,6 @@ export function get_cred_params() {
 export function set_cred_params(cred) {
   let data_string = encodeURIComponent(btoa(JSON.stringify({ cred })));
   history.replaceState(null, null, "#" + data_string);
-
-  // let urlParams = new URLSearchParams(window.location.search);
-  // urlParams.set("bucket", cred.bucket);
-  // urlParams.set("key_id", cred.key_id);
-  // urlParams.set("secret_access_key", cred.secret_access_key);
-  // urlParams.set("region", cred.region);
-  // window.location.search = urlParams.toString();
 }
 
 export function has_all_cred(cred) {
@@ -56,6 +49,8 @@ export function setup_s3(cred) {
     apiVersion: "2006-03-01",
     params: { Bucket: cred.bucket }
   });
+  // let sts = new AWS.STS();
+  // sts.getCallerIdentity().promise().then(console.log);
   return s3;
 }
 

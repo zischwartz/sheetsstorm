@@ -9,15 +9,23 @@
 
 ## Quickstart
 
-You can use [`Sheets Storm`](https://json.sheetsstorm.com/) with your own AWS credentials without installing anything.
+You can use [`Sheets Storm`](https://json.sheetsstorm.com/) with your own AWS credentials without installing anything, and for free (except for what AWS charges you).
 
 You need your AWS credentials and an S3 bucket [configured](<(#bucket-config)>) as follows.
 
+**Note**: To work the AWS IAM used to create the credentials _must_ have full permissions and access to the S3 bucket. If you can access and write to the bucket in the AWS console, you should be good.
+
 ## Bucket Config
+
+In the AWS S3 Bucket config, create a bucket or use an existing one, and then fill out the tabs at `https://s3.console.aws.amazon.com/s3/buckets/YOUR-BUCKET/` as follows:
+
+#### Under "Properties":
 
 `"Static website Hosting"` should be turned on.
 
-Under **Permissions**,
+#### Under "Permissions":
+
+Four more tabs:
 
 **Block Public Access** should be turned off
 
