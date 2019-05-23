@@ -65,6 +65,7 @@ export default class CredEdit extends React.Component {
           onKeyPress={on_enter}
           onChange={e => this.setState({ key_id: e.target.value })}
           value={this.state.key_id}
+          required
         />
         <TextInputField
           placeholder="Your Secret Key"
@@ -73,6 +74,8 @@ export default class CredEdit extends React.Component {
           onChange={e => this.setState({ secret_access_key: e.target.value })}
           value={this.state.secret_access_key}
           autocomplete="new-password"
+          type="password"
+          required
         />
         <TextInputField
           placeholder="Some general bucket"
@@ -80,6 +83,7 @@ export default class CredEdit extends React.Component {
           onKeyPress={on_enter}
           onChange={e => this.setState({ bucket: e.target.value })}
           value={this.state.bucket}
+          required
         />
         <TextInputField
           placeholder="us-west-2"
@@ -87,6 +91,7 @@ export default class CredEdit extends React.Component {
           onKeyPress={on_enter}
           onChange={e => this.setState({ region: e.target.value })}
           value={this.state.region}
+          required
         />
         <Checkbox
           label="Update Page URL With These Settings (Turn this off if using a public computer)"
