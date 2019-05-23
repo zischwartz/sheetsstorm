@@ -101,8 +101,6 @@ class App extends React.Component {
   }
   render() {
     let full_cred_flag = has_all_cred(this.state.cred);
-    // <Pane display="flex" minHeight="100vh" flexDirection="column">
-    // <Pane flex={1}>
 
     return (
       <Pane display="flex" minHeight="98vh" flexDirection="column">

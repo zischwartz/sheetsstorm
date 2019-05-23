@@ -2,10 +2,15 @@
 
 > [Sheets Storm](https://json.sheetsstorm.com/) is a web application built to turn Google Drive (Spread) Sheets into JSON files deployed on AWS S3 with the click of a button (and revert back to previous versions if someone makes a mistake!) Functionally, it's a drop in replacement for [Driveshaft](https://github.com/newsdev/driveshaft), though without server-side code.
 
+- [Use Cases](#use-cases)
 - [Quickstart](#quickstart)
 - [Bucket Config](#bucket-config)
 - [Dev](#dev)
 - [Notes](#notes)
+
+## Use Cases
+
+Say you're collaborating using Google Sheets, and want to use that data on the web, for a data visualization, site copy, etc. With Sheets Storm, you can easily and consistently update that data based on the Google Sheet changes. [Here's an extremely simple example](https://json.sheetsstorm.com/examples/example.html) of how you could use it.
 
 ## Quickstart
 

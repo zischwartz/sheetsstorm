@@ -98,7 +98,7 @@ export default class CredEdit extends React.Component {
           checked={this.state.update_url}
           onChange={e => this.setState({ update_url: e.target.checked })}
         />
-        <Heading size={300} textAlign="center">
+        <Heading size={300} textAlign="center" marginBottom={4}>
           This service does <strong>not</strong> store or transmit any of your
           data (except to AWS). There isn't even a server.
         </Heading>
