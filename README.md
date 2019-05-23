@@ -24,11 +24,11 @@ You need your AWS credentials and an S3 bucket [configured](<(#bucket-config)>) 
 
 In the AWS S3 Bucket config, create a bucket or use an existing one, and then fill out the tabs at `https://s3.console.aws.amazon.com/s3/buckets/YOUR-BUCKET/` as follows:
 
-#### Under "Properties":
+### Under "Properties":
 
 `"Static website Hosting"` should be turned on.
 
-#### Under "Permissions":
+### Under "Permissions":
 
 Four more tabs:
 
