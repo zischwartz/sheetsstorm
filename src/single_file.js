@@ -87,14 +87,16 @@ export default class SingleFile extends React.Component {
     let archive = await this.props.s3
       .listObjects({ Delimiter: "", Prefix: search_path })
       .promise()
-      .catch(e => console.log("err", e));
+      .catch((e) => console.log("err", e));
     archive = archive.Contents;
     archive = archive.sort((a, b) => +b.LastModified - +a.LastModified);
     // console.log(archive);
     let file_data_obj = JSON.parse(prod_file.Body.toString());
-    let overview = Object.keys(file_data_obj).map(table_name => {
+    let overview = Object.keys(file_data_obj).map((table_name) => {
       let rows = file_data_obj[table_name].length;
-      let cols = Object.keys(file_data_obj[table_name][0]);
+      let cols = file_data_obj[table_name][0]
+        ? Object.keys(file_data_obj[table_name][0])
+        : [];
       return { table_name, rows, cols };
     });
 
@@ -107,9 +109,7 @@ export default class SingleFile extends React.Component {
   }
   render() {
     let { bucket, region } = this.props.cred;
-    let full_path = `https://${bucket}.s3.${region}.amazonaws.com/${
-      this.props.selected
-    }`;
+    let full_path = `https://${bucket}.s3.${region}.amazonaws.com/${this.props.selected}`;
     let d = new Date(parseInt(this.state.meta.from));
     let active_date = this.state.meta.from ? to_human_date(d) : "";
     let { sheets_key } = this.state.meta;

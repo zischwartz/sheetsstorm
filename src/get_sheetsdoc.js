@@ -5,19 +5,25 @@ export async function get_sheetsdoc(sheets_doc_key) {
   let result = {};
   try {
     await gapi.client.init({
-      apiKey: process.env.GOOGLE_API_KEY
+      apiKey: process.env.GOOGLE_API_KEY,
     });
     let sheets_arr = await gapi.client.request({
-      path: `https://sheets.googleapis.com/v4/spreadsheets/${sheets_doc_key}?&fields=sheets.properties`
+      path: `https://sheets.googleapis.com/v4/spreadsheets/${sheets_doc_key}?&fields=sheets.properties`,
     });
-    await asyncForEach(sheets_arr.result.sheets, async a_sheet => {
+    await asyncForEach(sheets_arr.result.sheets, async (a_sheet) => {
       let single_sheet_title = a_sheet["properties"]["title"];
       let enc_single_sheet_title = encodeURIComponent(single_sheet_title);
       // console.log(single_sheet_title);
       let sheet_data = await gapi.client.request({
-        path: `https://sheets.googleapis.com/v4/spreadsheets/${sheets_doc_key}/values/${enc_single_sheet_title}`
+        path: `https://sheets.googleapis.com/v4/spreadsheets/${sheets_doc_key}/values/${enc_single_sheet_title}`,
       });
-      result[single_sheet_title] = objectify(sheet_data.result.values);
+      // console.log("---");
+      // console.log(single_sheet_title);
+      // console.log(sheet_data);
+      result[single_sheet_title] = sheet_data.result.values
+        ? objectify(sheet_data.result.values)
+        : [];
+      // console.log(result[single_sheet_title]);
     });
     return result;
   } catch (e) {
@@ -27,16 +33,23 @@ export async function get_sheetsdoc(sheets_doc_key) {
 }
 
 function objectify(values_arr) {
-  let col_headers = values_arr.shift();
-  return values_arr.map(row => {
-    let obj = {};
-    col_headers.forEach((head, i) => {
-      let v = row[i];
-      // this seems to be the way drive shaft handles this
-      obj[head] = v === "" || v === undefined ? null : v;
+  try {
+    let col_headers = values_arr.shift();
+    return values_arr.map((row) => {
+      let obj = {};
+      col_headers.forEach((head, i) => {
+        let v = row[i];
+        // this seems to be the way drive shaft handles this
+        obj[head] = v === "" || v === undefined ? null : v;
+      });
+      return obj;
     });
-    return obj;
-  });
+  } catch (e) {
+    console.log(e);
+    // console.log("values_arr");
+    // console.log(values_arr);
+    return [];
+  }
 }
 
 // a newer test, more complicated tabsheet titles, escaping, also just for dev
