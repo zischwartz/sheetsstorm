@@ -1,6 +1,6 @@
 .cache
 dist
-
+.parcel-cache
 # Logs
 logs
 *.log
