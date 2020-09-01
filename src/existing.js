@@ -19,38 +19,26 @@ import { asyncForEach, get_cred_params,  set_cred_params,  has_all_cred,  setup_
 
 export default class ExistingEntries extends React.Component {
   render() {
-    let { file_list } = this.props;
+    let { file_list, is_legacy_mode } = this.props;
 
     let list_entries = !file_list
       ? ``
-      : file_list.map(entry => {
-          let human_path = entry.Key.split(".json")[0].replace("prod/", "");
-          let modified = to_human_date(entry.LastModified);
-          return (
-            <Pane
-              key={human_path}
-              marginY={8}
-              padding={8}
-              background="tint1"
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-            >
-              <Text size={300}>{modified}</Text>
+      : file_list.map((entry) => (
+          <NormalExisting entry={entry} onEditClick={this.props.onEditClick} />
+        ));
+    // deal with legacy mode !
+    if (is_legacy_mode) {
+      console.log(this.props.legacy_lookup);
 
-              <Heading size={500}>{human_path}</Heading>
-              <Button
-                iconBefore="edit"
-                appearance="primary"
-                intent="success"
-                height={36}
-                onClick={() => this.props.onEditClick(entry.Key)}
-              >
-                Edit/Update
-              </Button>
-            </Pane>
-          );
-        });
+      list_entries = !this.props.legacy_lookup
+        ? ``
+        : this.props.legacy_lookup.map((entry) => (
+            <LegacyExisting
+              entry={entry}
+              onEditClick={this.props.onEditClick}
+            />
+          ));
+    }
     return (
       <Pane padding={16} border marginTop={16} elevation={0}>
         <Heading marginBottom={16}>Your Files</Heading>
@@ -64,4 +52,42 @@ export default class ExistingEntries extends React.Component {
       </Pane>
     );
   }
+}
+
+function LegacyExisting(props) {
+  return (
+    <Pane>
+      {" "}
+      <Text size={300}>{`hi`}</Text>
+    </Pane>
+  );
+}
+function NormalExisting(props) {
+  let { entry, onEditClick } = props;
+  let human_path = entry.Key.split(".json")[0].replace("prod/", "");
+  let modified = to_human_date(entry.LastModified);
+  return (
+    <Pane
+      key={human_path}
+      marginY={8}
+      padding={8}
+      background="tint1"
+      display="flex"
+      justifyContent="space-between"
+      alignItems="center"
+    >
+      <Text size={300}>{modified}</Text>
+
+      <Heading size={500}>{human_path}</Heading>
+      <Button
+        iconBefore="edit"
+        appearance="primary"
+        intent="success"
+        height={36}
+        onClick={() => props.onEditClick(entry.Key)}
+      >
+        Edit/Update
+      </Button>
+    </Pane>
+  );
 }
