@@ -41,21 +41,50 @@ class App extends React.Component {
     // e.g. / debug
     // this.state = { show_sf_add: false, show_cred, cred, selected: "prod/some_area/a_project.json" };
   }
-  // pass this in so we can count on it being up to date, as setstate isn't syncronous
-  load_files(cred) {
+
+  async load_files(cred) {
     if (has_all_cred(cred)) {
+      const is_legacy_mode = await this.check_if_legacy();
+      // special case
+      if (is_legacy_mode) {
+        // this.load_legacy_files();
+        // and return
+        return;
+      }
+
       get_files(this.s3, "prod/")
-        .then(file_list => {
+        .then((file_list) => {
           this.setState({ file_list, show_cred: false });
         })
-        .catch(e => {
+        .catch((e) => {
           toaster.danger(
-            "There was a problem with your credentials! Please make sure you've got them right",
+            "There was a problem with your credentials or the bucket settings! Please make sure you've got them right",
             { duration: 30 }
           );
         });
     }
   }
+
+  async check_if_legacy() {
+    try {
+      const legacy_index_file = await this.s3
+        // .getObject({ Key: `zzzdata/prwefaw` })
+        .getObject({ Key: `data/project_index/index.json` })
+        .promise();
+      let legacy_lookup = JSON.parse(legacy_index_file.Body.toString());
+      legacy_lookup = legacy_lookup["Sheet1"];
+      // remove the index file the actual object we're loading,
+      legacy_lookup = legacy_lookup.slice(1);
+      // console.log(legacy_lookup);
+      this.setState({ legacy_lookup, is_legacy_mode: true });
+      return true;
+    } catch (e) {
+      this.setState({ is_legacy_mode: false });
+      console.log(e);
+      return false;
+    }
+  }
+
   async componentDidMount() {
     // need to make a role ... maybe
     // https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/s3-example-photos-view.html
@@ -148,6 +177,13 @@ class App extends React.Component {
             <Code>⛈ Sheets Storm 📊</Code>
             {full_cred_flag ? (
               <Pane marginLeft={16}>
+                {this.state.is_legacy_mode ? (
+                  <Badge color="orange" marginX={4}>
+                    LEGACY MODE
+                  </Badge>
+                ) : (
+                  ``
+                )}
                 <Code>
                   <Badge color="yellow" marginRight={4}>
                     Bucket:
@@ -179,7 +215,9 @@ class App extends React.Component {
           </Button>
           <ExistingEntries
             file_list={this.state.file_list}
-            onEditClick={async path => {
+            is_legacy_mode={this.state.is_legacy_mode}
+            legacy_lookup={this.state.legacy_lookup}
+            onEditClick={async (path) => {
               this.setState({ selected: path });
             }}
           />
