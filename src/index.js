@@ -202,6 +202,7 @@ class App extends React.Component {
             iconBefore="plus"
             height="44"
             marginTop={16}
+            disabled={this.state.is_legacy_mode}
             onClick={() => this.setState({ show_sf_add: true })}
           >
             Add a new Google Sheets Document
