@@ -64,23 +64,22 @@ class App extends React.Component {
         });
     }
   }
-
+  // this uses Loren's old driveshaft kludge spreadsheet - highly NA specific
   async check_if_legacy() {
     try {
       const legacy_index_file = await this.s3
-        // .getObject({ Key: `zzzdata/prwefaw` })
         .getObject({ Key: `data/project_index/index.json` })
         .promise();
       let legacy_lookup = JSON.parse(legacy_index_file.Body.toString());
       legacy_lookup = legacy_lookup["Sheet1"];
-      // remove the index file the actual object we're loading,
+      // XXX remove the first entry, the index file the actual object we're loading,
       legacy_lookup = legacy_lookup.slice(1);
-      // console.log(legacy_lookup);
+
       this.setState({ legacy_lookup, is_legacy_mode: true });
       return true;
     } catch (e) {
       this.setState({ is_legacy_mode: false });
-      console.log(e);
+      // console.log(e);
       return false;
     }
   }
@@ -102,8 +101,9 @@ class App extends React.Component {
     // we'll use these later
     let meta = { name: info.name, from: now, sheets_key: info.sheets_key };
     let body = JSON.stringify(sheets_doc);
+    const p_path_prefix = this.state.is_legacy_mode ? "data/" : "prod/";
     try {
-      await put_file(this.s3, `prod/${info.path}.json`, body, meta);
+      await put_file(this.s3, `${p_path_prefix}${info.path}.json`, body, meta);
       await put_file(this.s3, `archive/${info.path}_${now}.json`, body, {});
     } catch (e) {
       console.log(e);
@@ -164,6 +164,8 @@ class App extends React.Component {
                 cred={this.state.cred}
                 selected={this.state.selected}
                 putSheetsDataToS3={this.putSheetsDataToS3}
+                is_legacy_mode={this.state.is_legacy_mode}
+                legacy_lookup={this.state.legacy_lookup}
               />
             </SideSheet>
           )}

@@ -28,7 +28,7 @@ export default class ExistingEntries extends React.Component {
         ));
     // deal with legacy mode !
     if (is_legacy_mode) {
-      console.log(this.props.legacy_lookup);
+      // console.log(this.props.legacy_lookup);
 
       list_entries = !this.props.legacy_lookup
         ? ``
@@ -42,8 +42,8 @@ export default class ExistingEntries extends React.Component {
     return (
       <Pane padding={16} border marginTop={16} elevation={0}>
         <Heading marginBottom={16}>Your Files</Heading>
-        {!file_list ? <Spinner marginX="auto" marginY={32} /> : ``}
-        {file_list && file_list.length == 0 ? (
+        {!list_entries.length ? <Spinner marginX="auto" marginY={32} /> : ``}
+        {list_entries && list_entries.length === 0 ? (
           <Text> No Files Yet. Add one above!</Text>
         ) : (
           ``
@@ -55,10 +55,35 @@ export default class ExistingEntries extends React.Component {
 }
 
 function LegacyExisting(props) {
+  let { entry, onEditClick } = props;
+
+  let human_path = entry.publish1
+    .replace("s3://na-data-projects/data/", "")
+    .replace(".json", "");
+
+  let main_path = entry.publish1.replace("s3://na-data-projects/", "");
+  // console.log(main_path);
   return (
-    <Pane>
-      {" "}
-      <Text size={300}>{`hi`}</Text>
+    <Pane
+      key={entry.key}
+      marginY={8}
+      padding={8}
+      background="tint1"
+      display="flex"
+      justifyContent="space-between"
+      alignItems="center"
+    >
+      <Heading size={500}>{entry.name}</Heading>
+      <Text>{human_path}</Text>
+      <Button
+        iconBefore="edit"
+        appearance="primary"
+        intent="success"
+        height={36}
+        onClick={() => onEditClick(main_path)}
+      >
+        Edit/Update
+      </Button>
     </Pane>
   );
 }
@@ -84,7 +109,7 @@ function NormalExisting(props) {
         appearance="primary"
         intent="success"
         height={36}
-        onClick={() => props.onEditClick(entry.Key)}
+        onClick={() => onEditClick(entry.Key)}
       >
         Edit/Update
       </Button>

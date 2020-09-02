@@ -39,7 +39,9 @@ export default class SingleFile extends React.Component {
     toaster.closeAll();
     toaster.success(`Successfully Loaded Latest Sheets Data`);
 
-    let path = this.props.selected.split(".json")[0].replace("prod/", "");
+    let path = this.props.selected
+      .split(".json")[0]
+      .replace(this.get_path_prefix(), "");
     let info = { name: meta.name, sheets_key, path };
     await this.props.putSheetsDataToS3(info, sheets_doc);
     await this.loadFileAndArchives();
@@ -72,18 +74,34 @@ export default class SingleFile extends React.Component {
     toaster.success(`Successfully Reverted`);
   }
   async componentDidMount() {
-    await this.loadFileAndArchives();
+    try {
+      await this.loadFileAndArchives();
+    } catch (e) {
+      this.setState({ error: true });
+      toaster.warning("This file does not exist in the bucket");
+      // console.log(e);
+    }
+  }
+  get_path_prefix() {
+    return this.props.is_legacy_mode ? "data/" : "prod/";
   }
   async loadFileAndArchives() {
+    // console.log("loadFileAndArchives");
+    // if we're in normal mode, we'll replace "/prod", in legacy mode, things start with "/data"
+    const path_prefix_to_replace = this.get_path_prefix();
+
     let prod_file = await this.props.s3
       .getObject({ Key: this.props.selected })
       .promise();
 
     let meta = prod_file.Metadata;
     // console.log(prod_file);
+
+    // the archive part is iffy for legacy mode XXX maybe just hide
     let search_path = this.props.selected
       .replace(".json", "")
-      .replace("prod/", "archive/");
+      .replace(path_prefix_to_replace, "archive/");
+
     let archive = await this.props.s3
       .listObjects({ Delimiter: "", Prefix: search_path })
       .promise()
@@ -100,6 +118,22 @@ export default class SingleFile extends React.Component {
       return { table_name, rows, cols };
     });
 
+    // console.log(meta);
+    // console.log("!!!");
+    // XXX special case if we're in legacy mode, the file won't have the meta data
+    if (this.props.is_legacy_mode) {
+      const record = this.props.legacy_lookup.find((x) => {
+        return (
+          this.props.selected ===
+          x["publish1"].replace("s3://na-data-projects/", "")
+        );
+      });
+      console.log("using", record);
+      meta["name"] = record["name"];
+
+      meta["sheets_key"] = record["key"];
+    }
+
     this.setState({ meta, archive, overview });
     // console.log(archive);
 
@@ -113,11 +147,12 @@ export default class SingleFile extends React.Component {
     let d = new Date(parseInt(this.state.meta.from));
     let active_date = this.state.meta.from ? to_human_date(d) : "";
     let { sheets_key } = this.state.meta;
+    let name_for_display = this.state.meta ? this.state.meta.name : "...";
     return (
       <Pane>
         <Pane padding={8} margin={8}>
           <Heading size={700} marginY={16}>
-            {this.state.meta ? this.state.meta.name : "..."}
+            {this.state.error ? "Error: File not found" : name_for_display}
           </Heading>
           <Heading marginY={16} display="flex" justifyContent="space-between">
             <Link
@@ -166,39 +201,44 @@ export default class SingleFile extends React.Component {
             Get Google Sheets Data and Upload New Version to S3
           </Button>
           <Heading marginY={16}>Archives</Heading>
-
-          {!this.state.archive ? (
-            <Spinner />
+          {this.state.archive && this.state.archive.length === 0 ? (
+            <Text>No existing archives for this file</Text>
           ) : (
-            this.state.archive.map((obj, i) => {
-              let is_active = obj.Key.endsWith(`_${this.state.meta.from}.json`);
-              return (
-                <Pane
-                  key={i}
-                  background="tint2"
-                  marginY={8}
-                  padding={8}
-                  display="flex"
-                  justifyContent="space-between"
-                >
-                  <Text>
-                    {" "}
-                    {is_active ? "✅" : "⏹"} {to_human_date(obj.LastModified)}
-                  </Text>
-                  {!is_active ? (
-                    <Button
-                      iconBefore="undo"
-                      onClick={() => this.revertTo(obj.Key)}
-                    >
-                      Revert To This Version
-                    </Button>
-                  ) : (
-                    <Badge color="green">Active</Badge>
-                  )}
-                </Pane>
-              );
-            })
+            ``
           )}
+          {!this.state.archive && !this.state.error ? <Spinner /> : ``}
+          {!this.state.archive
+            ? ``
+            : this.state.archive.map((obj, i) => {
+                let is_active = obj.Key.endsWith(
+                  `_${this.state.meta.from}.json`
+                );
+                return (
+                  <Pane
+                    key={i}
+                    background="tint2"
+                    marginY={8}
+                    padding={8}
+                    display="flex"
+                    justifyContent="space-between"
+                  >
+                    <Text>
+                      {" "}
+                      {is_active ? "✅" : "⏹"} {to_human_date(obj.LastModified)}
+                    </Text>
+                    {!is_active ? (
+                      <Button
+                        iconBefore="undo"
+                        onClick={() => this.revertTo(obj.Key)}
+                      >
+                        Revert To This Version
+                      </Button>
+                    ) : (
+                      <Badge color="green">Active</Badge>
+                    )}
+                  </Pane>
+                );
+              })}
         </Pane>
         <Pane marginY={16} borderTop padding={16} background="tint1">
           <Pane display="flex" justifyContent="space-between">
