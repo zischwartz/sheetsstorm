@@ -32,6 +32,6 @@
     "@babel/preset-env": "^7.4.2",
     "@babel/preset-react": "^7.0.0",
     "gh-pages": "^2.0.1",
-    "parcel-bundler": "^1.12.3"
+    "parcel": "2.0.0-alpha.3.2"
   }
 }
