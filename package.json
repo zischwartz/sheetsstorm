@@ -2,7 +2,7 @@
   "name": "sheetsstorm",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.html",
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -10,9 +10,10 @@
   "scripts": {
     "cname": "echo 'json.sheetsstorm.com' > dist/CNAME",
     "start": "parcel src/index.html --no-autoinstall",
+    "v": "parcel --version",
     "clean": "rm -R dist && mkdir dist",
     "cp": "cp -R examples dist/examples && cp assets/screenshot.png dist/screenshot.png",
-    "build-prod": "yarn clean && parcel build src/index.html --no-autoinstall  --public-url . --no-source-maps ",
+    "build-prod": "yarn clean && parcel build src/index.html --no-autoinstall --no-source-maps --log-level 3",
     "deploy": "yarn cname && yarn cp && yarn gh-pages -d dist ",
     "ship": "yarn build-prod && yarn deploy ",
     "build-prod-shake": "parcel build src/index.html --no-autoinstall  --public-url . --experimental-scope-hoisting"
