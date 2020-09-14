@@ -21,19 +21,18 @@ export default class SingleFile extends React.Component {
   constructor(props) {
     super(props);
     this.revertTo = this.revertTo.bind(this);
-    this.state = { meta: false, archive: false, overview: [] };
+    this.state = { meta: false, archive: false, overview: [], csvs: [] };
   }
   async addCSV() {
     let { meta } = this.state;
     let { sheets_key } = meta;
 
-    // todo!
-    // get_sheetsdoc_csvs()
     toaster.notify("Fetching the Google Sheets Document for CSVs...", {
       duration: 120,
     });
-    let sheets_csvs_obj = await get_sheetsdoc_csvs(sheets_key);
-    if (!sheets_csvs_obj) {
+    let sheets_csvs_arr = await get_sheetsdoc_csvs(sheets_key);
+    // let sheets_csvs_obj = await get_sheetsdoc_csvs(sheets_key);
+    if (!sheets_csvs_arr) {
       toaster.closeAll();
       // prettier-ignore
       toaster.warning("There was a problem getting the file from Google Sheets. Make sure it's set to public.");
@@ -42,15 +41,32 @@ export default class SingleFile extends React.Component {
     toaster.closeAll();
     toaster.notify(`Successfully Loaded Latest Sheets Data for CSVs`);
     // console.log(sheets_csvs_obj);
-    await asyncForEach(Object.keys(sheets_csvs_obj), async (single_key) => {
+    // { sheet_id, text, title: sheet_title, sheets_doc_key }
+    // await asyncForEach(sheets_csvs_arr, async (single_key) => {
+    await asyncForEach(sheets_csvs_arr, async (sheet_obj) => {
       // console.log(single_key);
+      let single_key = sheet_obj["sheet_id"];
+      let { text, ...rest } = sheet_obj;
       let file_path =
-        this.props.selected.replace(".json", "") + `/${single_key}.csv`;
-      put_csv_file(this.props.s3, file_path, sheets_csvs_obj[single_key], {});
+        this.props.selected
+          .replace(this.get_path_prefix(), "csvs/")
+          .replace(".json", "") + `/${single_key}.csv`;
+      put_csv_file(this.props.s3, file_path, sheet_obj["text"], rest);
     });
 
     toaster.closeAll();
     toaster.success(`Successfully Published CSV Files with Latest Data!`);
+    // finally reload to reflect
+    await this.loadFileAndArchives();
+  }
+  async get_csvs() {
+    let search_path = this.props.selected
+      .replace(this.get_path_prefix(), "csvs/")
+      .replace(".json", "/");
+    let csvs = await get_files(this.props.s3, search_path);
+    // console.log(csvs);
+    return csvs;
+    // console.log("get_csvs", search_path);
   }
   async addUpdate() {
     // console.log(this.state);
@@ -125,6 +141,7 @@ export default class SingleFile extends React.Component {
 
     let meta = prod_file.Metadata;
     // console.log(prod_file);
+    // console.log(meta);
 
     // the archive part is iffy for legacy mode XXX maybe just hide
     let search_path = this.props.selected
@@ -162,8 +179,9 @@ export default class SingleFile extends React.Component {
 
       meta["sheets_key"] = record["key"];
     }
-
-    this.setState({ meta, archive, overview });
+    let csvs = (await this.get_csvs()).map(({ Key }) => Key);
+    // console.log(csvs);
+    this.setState({ meta, archive, overview, csvs });
     // console.log(archive);
 
     // meta['']
@@ -304,7 +322,47 @@ export default class SingleFile extends React.Component {
             );
           })}
         </Pane>
+        <Pane padding={16}>
+          <Heading>CSVs</Heading>
+          {this.state.csvs.map((k) => (
+            <CSVFileItem path={k} key={k} bucket={bucket} region={region} />
+          ))}
+        </Pane>
       </Pane>
     );
   }
+}
+
+function CSVFileItem(props) {
+  let { path, bucket, region } = props;
+  // let { bucket, region } = this.props.cred;
+
+  let full_path = `https://${bucket}.s3.${region}.amazonaws.com/${path}`;
+  return (
+    <Pane
+      display="flex"
+      marginBottom={16}
+      width="100%"
+      flexDirection="row"
+      alignItems="stretch"
+    >
+      <TextInput
+        value={full_path}
+        readOnly
+        disabled
+        color="rgb(20,20,20)"
+        flex="1"
+        cursor="text !important"
+      />
+      <Button
+        iconBefore="duplicate"
+        onClick={() => {
+          copy(full_path);
+          toaster.success("Copied URL");
+        }}
+      >
+        Copy URL
+      </Button>
+    </Pane>
+  );
 }

@@ -52,9 +52,9 @@ function objectify(values_arr) {
   }
 }
 
-// similar to above but gets csvs
+// similar to above but gets csvs and an array
 export async function get_sheetsdoc_csvs(sheets_doc_key) {
-  let result = {};
+  let result = [];
   try {
     await gapi.client.init({
       apiKey: process.env.GOOGLE_API_KEY,
@@ -66,15 +66,15 @@ export async function get_sheetsdoc_csvs(sheets_doc_key) {
       let single_sheet_title = a_sheet["properties"]["title"];
       let enc_single_sheet_title = encodeURIComponent(single_sheet_title);
       // console.log("title", single_sheet_title);
-      // console.log();
-      let sheet_id = a_sheet["properties"]["sheetId"];
+      let sheet_id = a_sheet["properties"]["sheetId"].toString();
       // https://stackoverflow.com/a/33727897/83859
       let url = `https://docs.google.com/spreadsheets/d/${sheets_doc_key}/gviz/tq?tqx=out:csv&sheet=${enc_single_sheet_title}`;
       let resp = await fetch(url, { mode: "cors" });
       let text = await resp.text();
       // console.log(text);
       // console.log("\n\n");
-      result[sheet_id] = text;
+      result.push({ sheet_id, text, single_sheet_title, sheets_doc_key });
+      // result[sheet_id] = text;
       // console.log(text);
     });
   } catch (e) {
