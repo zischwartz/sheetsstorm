@@ -28,7 +28,7 @@ import SheetsFileAdd from "./sf_add";
 import CredEdit from "./cred_edit";
 import SingleFile from "./single_file";
 import ExistingEntries from "./existing";
-import { get_sheetsdoc } from "./get_sheetsdoc";
+import { get_sheetsdoc, get_sheetsdoc_csvs } from "./get_sheetsdoc";
 
 class App extends React.Component {
   constructor(props) {

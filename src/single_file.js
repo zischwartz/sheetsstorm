@@ -13,15 +13,44 @@ import { StackingOrder, Intent, Position } from "evergreen-ui/esm/constants";
 import { Badge, Pill } from "evergreen-ui/esm/badges";
 
 // prettier-ignore
-import { asyncForEach, get_cred_params,  set_cred_params,  has_all_cred,  setup_s3,  get_files,  put_file,  to_human_date} from "./util";
+import { asyncForEach, get_cred_params, put_csv_file,  set_cred_params,  has_all_cred,  setup_s3,  get_files,  put_file,  to_human_date} from "./util";
 
-import { get_sheetsdoc } from "./get_sheetsdoc";
+import { get_sheetsdoc, get_sheetsdoc_csvs } from "./get_sheetsdoc";
 
 export default class SingleFile extends React.Component {
   constructor(props) {
     super(props);
     this.revertTo = this.revertTo.bind(this);
     this.state = { meta: false, archive: false, overview: [] };
+  }
+  async addCSV() {
+    let { meta } = this.state;
+    let { sheets_key } = meta;
+
+    // todo!
+    // get_sheetsdoc_csvs()
+    toaster.notify("Fetching the Google Sheets Document for CSVs...", {
+      duration: 120,
+    });
+    let sheets_csvs_obj = await get_sheetsdoc_csvs(sheets_key);
+    if (!sheets_csvs_obj) {
+      toaster.closeAll();
+      // prettier-ignore
+      toaster.warning("There was a problem getting the file from Google Sheets. Make sure it's set to public.");
+      return;
+    }
+    toaster.closeAll();
+    toaster.notify(`Successfully Loaded Latest Sheets Data for CSVs`);
+    // console.log(sheets_csvs_obj);
+    await asyncForEach(Object.keys(sheets_csvs_obj), async (single_key) => {
+      // console.log(single_key);
+      let file_path =
+        this.props.selected.replace(".json", "") + `/${single_key}.csv`;
+      put_csv_file(this.props.s3, file_path, sheets_csvs_obj[single_key], {});
+    });
+
+    toaster.closeAll();
+    toaster.success(`Successfully Published CSV Files with Latest Data!`);
   }
   async addUpdate() {
     // console.log(this.state);
@@ -192,13 +221,22 @@ export default class SingleFile extends React.Component {
           </Pane>
           <Button
             appearance="primary"
-            width={"100%"}
+            width={"75%"}
             height={40}
             iconBefore="cloud-upload"
             marginBottom={32}
             onClick={() => this.addUpdate()}
           >
             Get Google Sheets Data and Upload New Version to S3
+          </Button>
+          <Button
+            iconBefore="cloud-upload"
+            height={40}
+            marginLeft={8}
+            marginBottom={32}
+            onClick={() => this.addCSV()}
+          >
+            Load CSVs
           </Button>
           <Heading marginY={16}>Archives</Heading>
           {this.state.archive && this.state.archive.length === 0 ? (

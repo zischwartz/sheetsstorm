@@ -52,9 +52,43 @@ function objectify(values_arr) {
   }
 }
 
+// similar to above but gets csvs
+export async function get_sheetsdoc_csvs(sheets_doc_key) {
+  let result = {};
+  try {
+    await gapi.client.init({
+      apiKey: process.env.GOOGLE_API_KEY,
+    });
+    let sheets_arr = await gapi.client.request({
+      path: `https://sheets.googleapis.com/v4/spreadsheets/${sheets_doc_key}?&fields=sheets.properties`,
+    });
+    await asyncForEach(sheets_arr.result.sheets, async (a_sheet) => {
+      let single_sheet_title = a_sheet["properties"]["title"];
+      let enc_single_sheet_title = encodeURIComponent(single_sheet_title);
+      // console.log("title", single_sheet_title);
+      // console.log();
+      let sheet_id = a_sheet["properties"]["sheetId"];
+      // https://stackoverflow.com/a/33727897/83859
+      let url = `https://docs.google.com/spreadsheets/d/${sheets_doc_key}/gviz/tq?tqx=out:csv&sheet=${enc_single_sheet_title}`;
+      let resp = await fetch(url, { mode: "cors" });
+      let text = await resp.text();
+      // console.log(text);
+      // console.log("\n\n");
+      result[sheet_id] = text;
+      // console.log(text);
+    });
+  } catch (e) {
+    console.log(e);
+    return false;
+  }
+  return result;
+  // https://docs.google.com/spreadsheets/d/{key}/gviz/tq?tqx=out:csv&sheet={sheet_name}
+}
+
 // a newer test, more complicated tabsheet titles, escaping, also just for dev
 // gapi.load("client", async () => {
-//   let result = await get_sheetsdoc(
+//   // let result = await get_sheetsdoc(
+//   let result = await get_sheetsdoc_csvs(
 //     "1xa0iLqYKz8x9Yc_rfhtmSOJQ2EGgeUVjvV4A8LsIaxY"
 //   );
 //   console.log(result);
