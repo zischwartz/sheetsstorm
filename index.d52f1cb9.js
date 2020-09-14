@@ -59779,11 +59779,11 @@ function objectify(values_arr) {
 
     return [];
   }
-} // similar to above but gets csvs
+} // similar to above but gets csvs and an array
 
 
 async function get_sheetsdoc_csvs(sheets_doc_key) {
-  let result = {};
+  let result = [];
 
   try {
     await gapi.client.init({
@@ -59795,9 +59795,8 @@ async function get_sheetsdoc_csvs(sheets_doc_key) {
     await (0, _util.asyncForEach)(sheets_arr.result.sheets, async a_sheet => {
       let single_sheet_title = a_sheet["properties"]["title"];
       let enc_single_sheet_title = encodeURIComponent(single_sheet_title); // console.log("title", single_sheet_title);
-      // console.log();
 
-      let sheet_id = a_sheet["properties"]["sheetId"]; // https://stackoverflow.com/a/33727897/83859
+      let sheet_id = a_sheet["properties"]["sheetId"].toString(); // https://stackoverflow.com/a/33727897/83859
 
       let url = `https://docs.google.com/spreadsheets/d/${sheets_doc_key}/gviz/tq?tqx=out:csv&sheet=${enc_single_sheet_title}`;
       let resp = await fetch(url, {
@@ -59806,7 +59805,13 @@ async function get_sheetsdoc_csvs(sheets_doc_key) {
       let text = await resp.text(); // console.log(text);
       // console.log("\n\n");
 
-      result[sheet_id] = text; // console.log(text);
+      result.push({
+        sheet_id,
+        text,
+        single_sheet_title,
+        sheets_doc_key
+      }); // result[sheet_id] = text;
+      // console.log(text);
     });
   } catch (e) {
     console.log(e);
@@ -60311,7 +60316,8 @@ class SingleFile extends React.Component {
     this.state = {
       meta: false,
       archive: false,
-      overview: []
+      overview: [],
+      csvs: []
     };
   }
 
@@ -60321,16 +60327,15 @@ class SingleFile extends React.Component {
     } = this.state;
     let {
       sheets_key
-    } = meta; // todo!
-    // get_sheetsdoc_csvs()
+    } = meta;
 
     _toaster.toaster.notify("Fetching the Google Sheets Document for CSVs...", {
       duration: 120
     });
 
-    let sheets_csvs_obj = await (0, _get_sheetsdoc.get_sheetsdoc_csvs)(sheets_key);
+    let sheets_csvs_arr = await (0, _get_sheetsdoc.get_sheetsdoc_csvs)(sheets_key); // let sheets_csvs_obj = await get_sheetsdoc_csvs(sheets_key);
 
-    if (!sheets_csvs_obj) {
+    if (!sheets_csvs_arr) {
       _toaster.toaster.closeAll(); // prettier-ignore
 
 
@@ -60342,17 +60347,34 @@ class SingleFile extends React.Component {
     _toaster.toaster.closeAll();
 
     _toaster.toaster.notify(`Successfully Loaded Latest Sheets Data for CSVs`); // console.log(sheets_csvs_obj);
+    // { sheet_id, text, title: sheet_title, sheets_doc_key }
+    // await asyncForEach(sheets_csvs_arr, async (single_key) => {
 
 
-    await (0, _util.asyncForEach)(Object.keys(sheets_csvs_obj), async single_key => {
+    await (0, _util.asyncForEach)(sheets_csvs_arr, async sheet_obj => {
       // console.log(single_key);
-      let file_path = this.props.selected.replace(".json", "") + `/${single_key}.csv`;
-      (0, _util.put_csv_file)(this.props.s3, file_path, sheets_csvs_obj[single_key], {});
+      let single_key = sheet_obj["sheet_id"];
+      let {
+        text,
+        ...rest
+      } = sheet_obj;
+      let file_path = this.props.selected.replace(this.get_path_prefix(), "csvs/").replace(".json", "") + `/${single_key}.csv`;
+      (0, _util.put_csv_file)(this.props.s3, file_path, sheet_obj["text"], rest);
     });
 
     _toaster.toaster.closeAll();
 
-    _toaster.toaster.success(`Successfully Published CSV Files with Latest Data!`);
+    _toaster.toaster.success(`Successfully Published CSV Files with Latest Data!`); // finally reload to reflect
+
+
+    await this.loadFileAndArchives();
+  }
+
+  async get_csvs() {
+    let search_path = this.props.selected.replace(this.get_path_prefix(), "csvs/").replace(".json", "/");
+    let csvs = await (0, _util.get_files)(this.props.s3, search_path); // console.log(csvs);
+
+    return csvs; // console.log("get_csvs", search_path);
   }
 
   async addUpdate() {
@@ -60458,6 +60480,7 @@ class SingleFile extends React.Component {
       Key: this.props.selected
     }).promise();
     let meta = prod_file.Metadata; // console.log(prod_file);
+    // console.log(meta);
     // the archive part is iffy for legacy mode XXX maybe just hide
 
     let search_path = this.props.selected.replace(".json", "").replace(path_prefix_to_replace, "archive/");
@@ -60490,10 +60513,15 @@ class SingleFile extends React.Component {
       meta["sheets_key"] = record["key"];
     }
 
+    let csvs = (await this.get_csvs()).map(({
+      Key
+    }) => Key); // console.log(csvs);
+
     this.setState({
       meta,
       archive,
-      overview
+      overview,
+      csvs
     }); // console.log(archive);
     // meta['']
     // console.log(prod_file.Metadata);
@@ -60606,12 +60634,56 @@ class SingleFile extends React.Component {
         borderBottom: true,
         marginBottom: 2
       }, React.createElement(_typography.Code, null, table_name), React.createElement(_typography.Text, null, rows, " rows x ", cols.length, " cols"));
-    })));
+    })), React.createElement(_layers.Pane, {
+      padding: 16
+    }, React.createElement(_typography.Heading, null, "CSVs"), this.state.csvs.map(k => React.createElement(CSVFileItem, {
+      path: k,
+      key: k,
+      bucket: bucket,
+      region: region
+    }))));
   }
 
 }
 
 exports.default = SingleFile;
+
+function CSVFileItem(props) {
+  let {
+    path,
+    bucket,
+    region
+  } = props; // let { bucket, region } = this.props.cred;
+
+  let full_path = `https://${bucket}.s3.${region}.amazonaws.com/${path}`;
+  return React.createElement(_layers.Pane, {
+    display: "flex",
+    marginBottom: 16,
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "stretch"
+  }, React.createElement(_textInput.TextInput, {
+    value: full_path,
+    readOnly: true,
+    disabled: true,
+    color: "rgb(20,20,20)",
+    flex: "1",
+    cursor: "text !important"
+  }), React.createElement(_Buttons.Button, {
+    iconBefore: "duplicate",
+    onClick: () => {
+      (0, _clipboardCopy.default)(full_path);
+
+      _toaster.toaster.success("Copied URL");
+    }
+  }, "Copy URL"));
+}
+
+_c = CSVFileItem;
+
+var _c;
+
+$RefreshReg$(_c, "CSVFileItem");
 },{"clipboard-copy":"4dEs3","evergreen-ui/esm/layers":"HLmjw","evergreen-ui/esm/typography":"6Aj3a","evergreen-ui/esm/Buttons":"6yhWZ","evergreen-ui/esm/text-input":"3hnE4","evergreen-ui/esm/menu":"4sFI1","evergreen-ui/esm/toaster":"2pp0D","evergreen-ui/esm/spinner":"5CvBe","evergreen-ui/esm/constants":"7zNWS","evergreen-ui/esm/badges":"4KfGh","./util":"3F0nj","./get_sheetsdoc":"7B99V"}],"4dEs3":[function(require,module,exports) {
 module.exports = clipboardCopy
 
