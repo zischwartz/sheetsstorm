@@ -64,6 +64,10 @@ export async function get_sheetsdoc_csvs(sheets_doc_key) {
     });
     await asyncForEach(sheets_arr.result.sheets, async (a_sheet) => {
       let single_sheet_title = a_sheet["properties"]["title"];
+      // emoji in s3 file metadat are a problem
+      // this strips them, but is imperfect
+
+      single_sheet_title = single_sheet_title.replace(/\W/g, " ");
       let enc_single_sheet_title = encodeURIComponent(single_sheet_title);
       // console.log("title", single_sheet_title);
       let sheet_id = a_sheet["properties"]["sheetId"].toString();

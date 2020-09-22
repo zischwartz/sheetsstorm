@@ -52,6 +52,7 @@ export default class SingleFile extends React.Component {
           .replace(this.get_path_prefix(), "csvs/")
           .replace(".json", "") + `/${single_key}.csv`;
       put_csv_file(this.props.s3, file_path, sheet_obj["text"], rest);
+      // console.log(this.props.s3, file_path, sheet_obj["text"], rest);
     });
 
     toaster.closeAll();
@@ -64,7 +65,7 @@ export default class SingleFile extends React.Component {
       .replace(this.get_path_prefix(), "csvs/")
       .replace(".json", "/");
     let csvs = await get_files(this.props.s3, search_path);
-    // console.log(csvs);
+    // console.log(csvs.length);
     return csvs;
     // console.log("get_csvs", search_path);
   }
