@@ -31,7 +31,7 @@ export default class SingleFile extends React.Component {
       duration: 120,
     });
     let sheets_csvs_arr = await get_sheetsdoc_csvs(sheets_key);
-    // let sheets_csvs_obj = await get_sheetsdoc_csvs(sheets_key);
+
     if (!sheets_csvs_arr) {
       toaster.closeAll();
       // prettier-ignore
@@ -52,6 +52,7 @@ export default class SingleFile extends React.Component {
           .replace(this.get_path_prefix(), "csvs/")
           .replace(".json", "") + `/${single_key}.csv`;
       // console.log(file_path, rest);
+      console.log(single_key, rest.single_sheet_title);
       put_csv_file(this.props.s3, file_path, sheet_obj["text"], rest);
     });
 
@@ -65,7 +66,7 @@ export default class SingleFile extends React.Component {
       .replace(this.get_path_prefix(), "csvs/")
       .replace(".json", "/");
     let csvs = await get_files(this.props.s3, search_path);
-    // console.log(csvs.length);
+    console.log("csvs found:", csvs.length);
     return csvs;
     // console.log("get_csvs", search_path);
   }
