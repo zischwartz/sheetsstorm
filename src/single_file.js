@@ -51,8 +51,8 @@ export default class SingleFile extends React.Component {
         this.props.selected
           .replace(this.get_path_prefix(), "csvs/")
           .replace(".json", "") + `/${single_key}.csv`;
+      // console.log(file_path, rest);
       put_csv_file(this.props.s3, file_path, sheet_obj["text"], rest);
-      // console.log(this.props.s3, file_path, sheet_obj["text"], rest);
     });
 
     toaster.closeAll();

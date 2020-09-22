@@ -64,10 +64,7 @@ export async function get_sheetsdoc_csvs(sheets_doc_key) {
     });
     await asyncForEach(sheets_arr.result.sheets, async (a_sheet) => {
       let single_sheet_title = a_sheet["properties"]["title"];
-      // emoji in s3 file metadat are a problem
-      // this strips them, but is imperfect
 
-      single_sheet_title = single_sheet_title.replace(/\W/g, " ");
       let enc_single_sheet_title = encodeURIComponent(single_sheet_title);
       // console.log("title", single_sheet_title);
       let sheet_id = a_sheet["properties"]["sheetId"].toString();
@@ -75,8 +72,13 @@ export async function get_sheetsdoc_csvs(sheets_doc_key) {
       let url = `https://docs.google.com/spreadsheets/d/${sheets_doc_key}/gviz/tq?tqx=out:csv&sheet=${enc_single_sheet_title}`;
       let resp = await fetch(url, { mode: "cors" });
       let text = await resp.text();
-      // console.log(text);
       // console.log("\n\n");
+      // console.log(sheet_id);
+      // console.log(text.slice(0, 50));
+      // emoji in s3 file metadat are a problem
+      // this strips them, but is imperfect
+      // moved this down, can't do it above the request, we query based on this!
+      single_sheet_title = single_sheet_title.replace(/\W/g, " ");
       result.push({ sheet_id, text, single_sheet_title, sheets_doc_key });
       // result[sheet_id] = text;
       // console.log(text);
